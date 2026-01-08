@@ -6,7 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api/client";
-import type { ApiResponse, Course, CourseFilters, CreateCourseRequest } from "@/types/api";
+import type { ApiResponse, Course, CourseFilters, CreateCourseRequest, UpdateCourseRequest } from "@/types/api";
 
 /**
  * Get all courses with filters (Admin)
@@ -91,7 +91,7 @@ export const useUpdateCourse = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Course> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: UpdateCourseRequest }) => {
       const response = await apiClient.put<ApiResponse<Course>>(`/admin/courses/${id}`, data);
       return response.data;
     },

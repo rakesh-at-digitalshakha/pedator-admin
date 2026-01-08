@@ -57,7 +57,7 @@ export function CategoriesManagement() {
   // Check which subcategories are used in courses
   const subcategoriesInUse = useMemo(() => {
     const subCatIds = new Set<string>();
-    coursesData?.data?.forEach((course) => {
+    coursesData?.data?.data?.forEach((course) => {
       if (course.subCategoryId?._id) {
         subCatIds.add(course.subCategoryId._id);
       }
@@ -342,7 +342,7 @@ export function CategoriesManagement() {
                     {subCategoriesData?.data?.map((subCategory) => {
                       const parentCategory = categoriesData?.data?.find((c) => c._id === subCategory.categoryId);
                       const isInUse = subcategoriesInUse.has(subCategory._id);
-                      const coursesUsingCount = coursesData?.data?.filter(
+                      const coursesUsingCount = coursesData?.data?.data?.filter(
                         (course) => course.subCategoryId?._id === subCategory._id
                       ).length || 0;
                       

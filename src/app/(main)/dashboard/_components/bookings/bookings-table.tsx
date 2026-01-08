@@ -53,7 +53,7 @@ export function BookingsTable() {
 
   const { data: bookingsData, isLoading, error } = useGetAllBookings(filters);
 
-  const bookings = bookingsData?.data ?? [];
+  const bookings = bookingsData?.data?.data ?? [];
 
   const handleStatusChange = React.useCallback((value: string) => {
     setStatusFilter(value);
@@ -217,12 +217,12 @@ export function BookingsTable() {
             isLoading={isLoading}
             table={table}
           />
-          {bookingsData && bookingsData.pages > 1 && (
+          {bookingsData?.data && bookingsData.data.pages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-muted-foreground text-sm">
                 Showing {((filters.page ?? 1) - 1) * (filters.limit ?? 10) + 1} to{" "}
-                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), bookingsData.total ?? 0)} of{" "}
-                {bookingsData.total ?? 0} bookings
+                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), bookingsData.data.total ?? 0)} of{" "}
+                {bookingsData.data.total ?? 0} bookings
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -234,13 +234,13 @@ export function BookingsTable() {
                   Previous
                 </Button>
                 <span className="text-muted-foreground text-sm">
-                  Page {filters.page ?? 1} of {bookingsData.pages ?? 1}
+                  Page {filters.page ?? 1} of {bookingsData?.data?.pages ?? 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(Math.min(bookingsData.pages ?? 1, (filters.page ?? 1) + 1))}
-                  disabled={(filters.page ?? 1) >= (bookingsData.pages ?? 1)}
+                  onClick={() => handlePageChange(Math.min(bookingsData?.data?.pages ?? 1, (filters.page ?? 1) + 1))}
+                  disabled={(filters.page ?? 1) >= (bookingsData?.data?.pages ?? 1)}
                 >
                   Next
                 </Button>

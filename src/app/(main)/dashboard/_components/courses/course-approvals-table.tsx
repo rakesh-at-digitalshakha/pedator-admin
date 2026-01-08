@@ -57,7 +57,7 @@ export function CourseApprovalsTable() {
   const [rejectingCourse, setRejectingCourse] = React.useState<Course | null>(null);
   const [rejectionReason, setRejectionReason] = React.useState("");
 
-  const courses = coursesData?.data ?? [];
+  const courses = coursesData?.data?.data ?? [];
 
   const handleApprove = React.useCallback((course: Course) => {
     approve(course._id, {
@@ -189,12 +189,12 @@ export function CourseApprovalsTable() {
             isLoading={isLoading}
             table={table}
           />
-          {coursesData && coursesData.pages > 1 && (
+          {coursesData?.data && coursesData.data.pages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-muted-foreground text-sm">
                 Showing {((filters.page ?? 1) - 1) * (filters.limit ?? 10) + 1} to{" "}
-                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), coursesData.total ?? 0)} of{" "}
-                {coursesData.total ?? 0} courses
+                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), coursesData.data.total ?? 0)} of{" "}
+                {coursesData.data.total ?? 0} courses
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -206,13 +206,13 @@ export function CourseApprovalsTable() {
                   Previous
                 </Button>
                 <span className="text-muted-foreground text-sm">
-                  Page {filters.page ?? 1} of {coursesData.pages ?? 1}
+                  Page {filters.page ?? 1} of {coursesData?.data?.pages ?? 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(Math.min(coursesData.pages ?? 1, (filters.page ?? 1) + 1))}
-                  disabled={(filters.page ?? 1) >= (coursesData.pages ?? 1)}
+                  onClick={() => handlePageChange(Math.min(coursesData?.data?.pages ?? 1, (filters.page ?? 1) + 1))}
+                  disabled={(filters.page ?? 1) >= (coursesData?.data?.pages ?? 1)}
                 >
                   Next
                 </Button>

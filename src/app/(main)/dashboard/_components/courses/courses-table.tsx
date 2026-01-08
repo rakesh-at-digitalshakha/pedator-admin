@@ -95,9 +95,9 @@ export function CoursesTable() {
 
       <DataTable
         columns={courseColumns}
-        data={coursesData?.data || []}
+        data={coursesData?.data?.data || []}
         isLoading={isLoading}
-        pageCount={coursesData?.pages || 1}
+        pageCount={coursesData?.data?.pages || 1}
       />
     </div>
   );

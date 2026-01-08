@@ -64,3 +64,13 @@ export type CreateCourseRequest = {
   price: number;
   status?: boolean;
 };
+
+export type UpdateCourseRequest = {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  subCategoryId?: string;
+  mentorId?: string;
+  price?: number;
+  status?: boolean;
+};

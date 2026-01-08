@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Edit, Trash2, Search, AlertCircle } from "lucide-react";
+
+import { Plus, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/data-table/data-table";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DataTable } from "@/components/data-table/data-table";
-import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useGetAllCourses,
   useUpdateCourse,
@@ -32,9 +32,10 @@ import {
   useApproveCourse,
   useRejectCourse,
 } from "@/hooks/api";
-import type { CourseFilters, Course, CreateCourseRequest } from "@/types/api";
+import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+import type { CourseFilters, Course, CreateCourseRequest, UpdateCourseRequest } from "@/types/api";
 import { allCoursesColumns } from "./all-courses-columns";
-import { CourseForm } from "./forms/course-form";
+import { CourseForm, type CourseFormValues } from "./forms/course-form";
 
 export function AllCoursesTable() {
   const [filters, setFilters] = React.useState<CourseFilters>({
@@ -49,7 +50,7 @@ export function AllCoursesTable() {
   const [searchValue, setSearchValue] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
-  
+
   // Reject dialog state
   const [showRejectDialog, setShowRejectDialog] = React.useState(false);
   const [rejectingCourse, setRejectingCourse] = React.useState<Course | null>(null);
@@ -78,7 +79,7 @@ export function AllCoursesTable() {
   const { data: subCategoriesData } = useGetAllSubCategories();
   const { data: mentorsData } = useGetAllMentors({ page: 1, limit: 100 });
 
-  const courses = coursesData?.data ?? [];
+  const courses = coursesData?.data?.data ?? [];
 
   const handleEdit = React.useCallback((course: Course) => {
     setEditingCourse(course);
@@ -92,7 +93,7 @@ export function AllCoursesTable() {
           toast.success("Course deleted successfully");
         },
         onError: (error: any) => {
-          const errorMessage = error.response?.data?.message || "Failed to delete course";
+          const errorMessage = error.response?.data?.message ?? "Failed to delete course";
           toast.error(errorMessage);
         },
       });
@@ -141,14 +142,14 @@ export function AllCoursesTable() {
         toast.success(`Course "${course.title}" has been ${isRejected ? "re-approved" : "approved"}`);
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || "Failed to approve course");
+        toast.error(error.response?.data?.message ?? "Failed to approve course");
       },
     });
   }, [approveCourse]);
 
   const handleReject = React.useCallback((course: Course) => {
     setRejectingCourse(course);
-    setRejectionReason(course.rejectionReason || "");
+    setRejectionReason(course.rejectionReason ?? "");
     setShowRejectDialog(true);
   }, []);
 
@@ -165,7 +166,7 @@ export function AllCoursesTable() {
           setRejectionReason("");
         },
         onError: (error: any) => {
-          toast.error(error.response?.data?.message || "Failed to reject course");
+          toast.error(error.response?.data?.message ?? "Failed to reject course");
         },
       }
     );
@@ -175,8 +176,19 @@ export function AllCoursesTable() {
     (values: Partial<CourseFormValues>) => {
       if (!editingCourse) return;
 
+      // Transform form values to API request format
+      const updateData: UpdateCourseRequest = {
+        title: values.title,
+        description: values.description,
+        categoryId: values.categoryId,
+        subCategoryId: values.subCategoryId,
+        mentorId: values.mentorId,
+        price: typeof values.price === "string" ? parseFloat(values.price) : values.price,
+        status: values.status,
+      };
+
       updateCourse(
-        { id: editingCourse._id, data: values },
+        { id: editingCourse._id, data: updateData },
         {
           onSuccess: () => {
             toast.success("Course updated successfully");
@@ -184,7 +196,7 @@ export function AllCoursesTable() {
             setEditingCourse(null);
           },
           onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to update course");
+            toast.error(error.response?.data?.message ?? "Failed to update course");
           },
         }
       );
@@ -215,7 +227,7 @@ export function AllCoursesTable() {
           setIsCreateDialogOpen(false);
         },
         onError: (error: any) => {
-          toast.error(error.response?.data?.message || "Failed to create course");
+          toast.error(error.response?.data?.message ?? "Failed to create course");
         },
       });
     },
@@ -266,51 +278,51 @@ export function AllCoursesTable() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4 flex-1">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search courses..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categoriesData?.data?.map((category) => (
-              <SelectItem key={category._id} value={category._id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSearchValue("");
-            setStatusFilter("all");
-            setCategoryFilter("all");
-            setFilters({ page: 1, limit: 10, sortBy: "createdAt", order: "desc" });
-          }}
-        >
-          Reset Filters
-        </Button>
+        <div className="flex flex-1 flex-wrap items-center gap-4">
+          <div className="relative max-w-sm min-w-[200px] flex-1">
+            <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+            <Input
+              placeholder="Search courses..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categoriesData?.data?.map((category) => (
+                <SelectItem key={category._id} value={category._id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchValue("");
+              setStatusFilter("all");
+              setCategoryFilter("all");
+              setFilters({ page: 1, limit: 10, sortBy: "createdAt", order: "desc" });
+            }}
+          >
+            Reset Filters
+          </Button>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="mr-2 size-4" />
@@ -325,18 +337,13 @@ export function AllCoursesTable() {
         </div>
       ) : (
         <>
-          <DataTable 
-            columns={columns} 
-            data={courses} 
-            isLoading={isLoading}
-            table={table}
-          />
-          {coursesData && coursesData.pages > 1 && (
+          <DataTable columns={columns} data={courses} isLoading={isLoading} table={table} />
+          {coursesData?.data && coursesData.data.pages > 1 && (
             <div className="flex items-center justify-between">
               <div className="text-muted-foreground text-sm">
                 Showing {((filters.page ?? 1) - 1) * (filters.limit ?? 10) + 1} to{" "}
-                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), coursesData.total ?? 0)} of{" "}
-                {coursesData.total ?? 0} courses
+                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), coursesData.data.total ?? 0)} of{" "}
+                {coursesData.data.total ?? 0} courses
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -348,13 +355,13 @@ export function AllCoursesTable() {
                   Previous
                 </Button>
                 <span className="text-muted-foreground text-sm">
-                  Page {filters.page ?? 1} of {coursesData.pages ?? 1}
+                  Page {filters.page ?? 1} of {coursesData.data.pages ?? 1}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(Math.min(coursesData.pages ?? 1, (filters.page ?? 1) + 1))}
-                  disabled={(filters.page ?? 1) >= (coursesData.pages ?? 1)}
+                  onClick={() => handlePageChange(Math.min(coursesData.data.pages ?? 1, (filters.page ?? 1) + 1))}
+                  disabled={(filters.page ?? 1) >= (coursesData.data.pages ?? 1)}
                 >
                   Next
                 </Button>
@@ -366,7 +373,7 @@ export function AllCoursesTable() {
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Course</DialogTitle>
             <DialogDescription>Create a new course and assign it to a mentor</DialogDescription>
@@ -381,14 +388,13 @@ export function AllCoursesTable() {
               status: true,
               mentorId: "",
             }}
-            showMentorField={true}
-            categories={categoriesData?.data || []}
-            subCategories={(subCategoriesData?.data || []).map((s: any) => ({
+            categories={categoriesData?.data ?? []}
+            subCategories={(subCategoriesData?.data ?? []).map((s: any) => ({
               _id: s._id,
               name: s.name,
-              categoryId: s.categoryId?._id || s.categoryId,
+              categoryId: s.categoryId?._id ?? s.categoryId,
             }))}
-            mentors={(mentorsData?.data || []).filter((m: any) => m.isProfileApproved)}
+            mentors={(mentorsData?.data ?? []).filter((m: any) => m.isProfileApproved)}
             showMentorField={true}
             loading={isCreating}
             onCancel={() => setIsCreateDialogOpen(false)}
@@ -413,6 +419,7 @@ export function AllCoursesTable() {
                 subCategoryId: editingCourse.subCategoryId?._id || "",
                 price: editingCourse.price,
                 status: editingCourse.status,
+                mentorId: editingCourse.mentorId?._id || "",
               }}
               categories={categoriesData?.data || []}
               subCategories={(subCategoriesData?.data || []).map((s: any) => ({
@@ -420,6 +427,8 @@ export function AllCoursesTable() {
                 name: s.name,
                 categoryId: s.categoryId?._id || s.categoryId,
               }))}
+              mentors={(mentorsData?.data || []).filter((m: any) => m.isProfileApproved)}
+              showMentorField={true}
               loading={isUpdating}
               onCancel={() => {
                 setIsEditDialogOpen(false);

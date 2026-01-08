@@ -1,6 +1,6 @@
 # Next.js Admin Template with TypeScript & Shadcn UI
 
-**Studio Admin** - Includes multiple dashboards, authentication layouts, customizable theme presets, and more.
+**Pedetor Admin** - Includes multiple dashboards, authentication layouts, customizable theme presets, and more.
 
 <img src="https://github.com/arhamkhnz/next-shadcn-admin-dashboard/blob/main/media/dashboard.png?version=5" alt="Dashboard Screenshot">
 

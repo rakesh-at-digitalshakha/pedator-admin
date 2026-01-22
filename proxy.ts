@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
  * Proxy function runs before requests complete.
  * Handles authentication checks and redirects.
  */
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get("admin_token")?.value; // Fixed: changed from auth_token to admin_token
   const pathname = req.nextUrl.pathname;
   const expired = req.nextUrl.searchParams.get("expired");

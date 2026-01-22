@@ -50,7 +50,7 @@ export function MentorReviewsTable() {
   const learners = (learnersData?.data as any[]) ?? [];
   const courses = coursesData?.data?.data ?? [];
 
-  const reviews = reviewsData?.data ?? [];
+  const reviews = ((reviewsData as any)?.data ?? []) as any[];
 
   const handleMentorChange = React.useCallback((value: string) => {
     setMentorFilter(value);

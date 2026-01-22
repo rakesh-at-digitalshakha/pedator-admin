@@ -14,7 +14,7 @@ import type { ApiResponse, CreateLearnerRequest, LearnerFilters, LearnerUser } f
  */
 export const useGetAllLearners = (filters?: LearnerFilters) => {
   return useQuery({
-    queryKey: ["learners", filters],
+    queryKey: ["learners", filters?.page, filters?.limit, filters?.status, filters?.search, filters?.sortBy, filters?.order],
     queryFn: async () => {
       try {
         const params = new URLSearchParams();
@@ -32,8 +32,8 @@ export const useGetAllLearners = (filters?: LearnerFilters) => {
         throw error;
       }
     },
-    retry: 1,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 };
 
@@ -44,10 +44,12 @@ export const useGetLearnerById = (id: string) => {
   return useQuery({
     queryKey: ["learner", id],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<LearnerUser>>(`/learner/${id}`);
+      const response = await apiClient.get<ApiResponse<LearnerUser>>(`/admin/learners/${id}`);
       return response.data;
     },
     enabled: !!id,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
   });
 };
 
@@ -63,7 +65,7 @@ export const useCreateLearner = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["learners"] });
+      queryClient.invalidateQueries({ queryKey: ["learners"], exact: false });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
@@ -81,7 +83,9 @@ export const useUpdateLearner = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["learners"] });
+      queryClient.invalidateQueries({ queryKey: ["learners"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["learner"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
 };
@@ -98,7 +102,8 @@ export const useDeleteLearner = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["learners"] });
+      queryClient.invalidateQueries({ queryKey: ["learners"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["learner"], exact: false });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });

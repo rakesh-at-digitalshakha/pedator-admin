@@ -60,7 +60,7 @@ export const mentorReviewColumns = (): ColumnDef<MentorReview>[] => [
     accessorKey: "averageRating",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Rating" />,
     cell: ({ row }) => {
-      const rating = row.getValue("averageRating") as number;
+      const rating = (row.getValue("averageRating") as number) ?? 0;
       return (
         <div className="flex items-center gap-1">
           <Star className="size-4 fill-yellow-400 text-yellow-400" />

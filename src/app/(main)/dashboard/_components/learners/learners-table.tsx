@@ -199,10 +199,22 @@ export function LearnersTable() {
       <Card>
         <CardHeader>
           <CardTitle>Learners</CardTitle>
-          <CardDescription className="text-destructive">
-            Failed to load learners: {errorMessage}
-          </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Failed to load learners: {errorMessage}</span>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
       </Card>
     );
   }

@@ -49,11 +49,11 @@ export const platformReviewColumns = (
     accessorKey: "rating",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Rating" />,
     cell: ({ row }) => {
-      const rating = row.getValue("rating");
+      const rating = (row.getValue("rating") as number) ?? 0;
       return (
         <div className="flex items-center gap-1">
           <Star className="size-4 fill-yellow-400 text-yellow-400" />
-          <span className="font-medium">{rating}</span>
+          <span className="font-medium">{rating.toFixed(1)}</span>
         </div>
       );
     },
@@ -62,7 +62,7 @@ export const platformReviewColumns = (
     accessorKey: "review",
     header: "Review",
     cell: ({ row }) => {
-      const review = row.getValue("review");
+      const review = (row.getValue("review") as string) ?? "";
       return <div className="max-w-md truncate">{review}</div>;
     },
   },

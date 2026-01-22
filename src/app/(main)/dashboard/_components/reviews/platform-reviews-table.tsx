@@ -43,7 +43,7 @@ export function PlatformReviewsTable() {
   const updateStatusMutation = useUpdatePlatformReviewStatus();
   const deleteMutation = useDeletePlatformReview();
 
-  const reviews = reviewsData?.data ?? [];
+  const reviews = Array.isArray(reviewsData) ? reviewsData : ((reviewsData as any)?.data ?? []);
 
   const handleApprove = async (id: string) => {
     try {

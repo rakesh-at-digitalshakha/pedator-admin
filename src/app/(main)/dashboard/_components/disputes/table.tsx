@@ -36,12 +36,12 @@ export default function DisputesTable() {
           onChange={(e) => setSearch(e.target.value)}
           className="w-64"
         />
-        <Select onValueChange={(v) => setStatus(v)} value={status}>
+        <Select onValueChange={(v) => setStatus(v === "all" ? undefined : v)} value={status || "all"}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="investigating">Investigating</SelectItem>
             <SelectItem value="resolved">Resolved</SelectItem>

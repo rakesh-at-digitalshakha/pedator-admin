@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import * as Recharts from "recharts";
-import { Users, TrendingUp, DollarSign, BookOpen } from "lucide-react";
+import { Users, DollarSign, BookOpen } from "lucide-react";
 
 // Mock data for charts
 const revenueData = [

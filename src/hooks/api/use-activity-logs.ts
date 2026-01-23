@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 
-const BASE = "/admin";
+const BASE = "/api/v1/admin";
 
 async function getJSON<T>(url: string) {
   const res = await fetch(url, { credentials: "include" });

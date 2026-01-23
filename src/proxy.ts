@@ -16,7 +16,7 @@ export default function middleware(req: NextRequest) {
 
   // If user has token and tries to access login page, redirect to dashboard
   if (token && pathname === "/auth/login") {
-    return NextResponse.redirect(new URL("/dashboard/default", req.url));
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // If user doesn't have token and tries to access protected routes, redirect to login

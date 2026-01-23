@@ -53,7 +53,7 @@ export function BookingsTable() {
 
   const { data: bookingsData, isLoading, error } = useGetAllBookings(filters);
 
-  const bookings = bookingsData?.data?.data ?? [];
+  const bookings = bookingsData?.data ?? [];
 
   const handleStatusChange = React.useCallback((value: string) => {
     setStatusFilter(value);

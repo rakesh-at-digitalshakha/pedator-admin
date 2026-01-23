@@ -67,7 +67,7 @@ export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDe
       cell: ({ row }) => (
         <div className="flex items-center gap-1 font-bold">
           <DollarSign className="w-4 h-4" />
-          ${row.original.amount.toFixed(2)}
+          {formatCurrency(row.original.amount)}
         </div>
       ),
     },
@@ -141,7 +141,7 @@ export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDe
               <AlertDialogHeader>
                 <AlertDialogTitle>Approve Payout?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Approve ${row.original.amount.toFixed(2)} payout to {row.original.userName || row.original.userId}.
+                  Approve {formatCurrency(row.original.amount)} payout to {row.original.userName || row.original.userId}.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -163,7 +163,7 @@ export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDe
               <AlertDialogHeader>
                 <AlertDialogTitle>Reject Payout?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Reject ${row.original.amount.toFixed(2)} payout request. User will be notified.
+                  Reject {formatCurrency(row.original.amount)} payout request. User will be notified.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

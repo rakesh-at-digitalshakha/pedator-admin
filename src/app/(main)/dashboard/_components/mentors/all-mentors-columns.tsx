@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatCurrency } from "@/lib/utils";
 import type { MentorUser } from "@/types/api";
 
 type AllMentorsColumnsProps = {
@@ -61,7 +62,7 @@ export const allMentorsColumns = ({
     header: "Wallet",
     cell: ({ row }) => {
       const wallet = row.getValue<number>("wallet");
-      return <div className="font-semibold tabular-nums">${wallet?.toLocaleString() ?? 0}</div>;
+      return <div className="font-semibold tabular-nums">{formatCurrency(wallet ?? 0)}</div>;
     },
     enableSorting: false,
   },

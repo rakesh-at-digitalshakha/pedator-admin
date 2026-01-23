@@ -99,16 +99,16 @@ export default function ModerationTable() {
           />
           <Select
             onValueChange={(v) => {
-              setStatus(v || undefined);
+              setStatus(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={status || ""}
+            value={status || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="flagged">Flagged</SelectItem>
               <SelectItem value="reviewed">Reviewed</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
@@ -117,16 +117,16 @@ export default function ModerationTable() {
           </Select>
           <Select
             onValueChange={(v) => {
-              setSeverity(v || undefined);
+              setSeverity(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={severity || ""}
+            value={severity || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Severity" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="low">Low</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="high">High</SelectItem>

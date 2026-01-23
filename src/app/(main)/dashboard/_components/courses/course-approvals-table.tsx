@@ -57,7 +57,7 @@ export function CourseApprovalsTable() {
   const [rejectingCourse, setRejectingCourse] = React.useState<Course | null>(null);
   const [rejectionReason, setRejectionReason] = React.useState("");
 
-  const courses = coursesData?.data?.data ?? [];
+  const courses = coursesData?.data ?? [];
 
   const handleApprove = React.useCallback((course: Course) => {
     approve(course._id, {

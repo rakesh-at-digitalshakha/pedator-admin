@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/admin";
+const BASE = "/api/v1/admin";
 
 async function getJSON<T>(url: string) {
   const res = await fetch(url, { credentials: "include" });

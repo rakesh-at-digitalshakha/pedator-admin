@@ -11,6 +11,7 @@ import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { Badge } from "@/components/ui/badge";
 import { X, Download, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { formatCurrency } from "@/lib/utils";
 
 export default function PayoutsTable() {
   const [search, setSearch] = useState("");
@@ -102,14 +103,14 @@ export default function PayoutsTable() {
             <div className="text-sm text-muted-foreground">Pending</div>
             <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              ${totalPendingAmount.toFixed(2)}
+              {formatCurrency(totalPendingAmount)}
             </div>
           </Card>
           <Card className="p-4">
             <div className="text-sm text-muted-foreground">Approved</div>
             <div className="text-2xl font-bold text-blue-600">{approvedCount}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              ${totalApprovedAmount.toFixed(2)}
+              {formatCurrency(totalApprovedAmount)}
             </div>
           </Card>
           <Card className="p-4">
@@ -135,16 +136,16 @@ export default function PayoutsTable() {
           />
           <Select
             onValueChange={(v) => {
-              setStatus(v || undefined);
+              setStatus(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={status || ""}
+            value={status || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>

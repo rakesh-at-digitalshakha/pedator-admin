@@ -5,6 +5,7 @@ import { TrendingDown, TrendingUp, Users, UserCheck, DollarSign, Wallet } from "
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/utils";
 import { useGetAdminStats } from "@/hooks/api";
 
 export function AdminStatsCards() {
@@ -101,7 +102,7 @@ export function AdminStatsCards() {
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <DollarSign className="text-muted-foreground size-5" />${statsData?.totalRevenue?.toLocaleString() ?? 0}
+            <DollarSign className="text-muted-foreground size-5" />{formatCurrency(statsData?.totalRevenue ?? 0)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -119,7 +120,7 @@ export function AdminStatsCards() {
         <CardHeader>
           <CardDescription>Monthly Revenue</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <DollarSign className="text-muted-foreground size-5" />${statsData?.monthlyRevenue?.toLocaleString() ?? 0}
+            <DollarSign className="text-muted-foreground size-5" />{formatCurrency(statsData?.monthlyRevenue ?? 0)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -137,7 +138,7 @@ export function AdminStatsCards() {
         <CardHeader>
           <CardDescription>Platform Balance</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <Wallet className="text-muted-foreground size-5" />${statsData?.platformBalance?.toLocaleString() ?? 0}
+            <Wallet className="text-muted-foreground size-5" />{formatCurrency(statsData?.platformBalance ?? 0)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

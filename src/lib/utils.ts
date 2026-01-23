@@ -19,6 +19,24 @@ export const getInitials = (str: string): string => {
   );
 };
 
+export function formatNumber(
+  value?: number | null,
+  opts?: {
+    locale?: string;
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+  },
+) {
+  if (value === null || value === undefined) return "0";
+
+  const { locale = "en-US", minimumFractionDigits = 0, maximumFractionDigits = 0 } = opts ?? {};
+
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits,
+    maximumFractionDigits,
+  }).format(value);
+}
+
 export function formatCurrency(
   amount: number,
   opts?: {
@@ -29,7 +47,7 @@ export function formatCurrency(
     noDecimals?: boolean;
   },
 ) {
-  const { currency = "USD", locale = "en-US", minimumFractionDigits, maximumFractionDigits, noDecimals } = opts ?? {};
+  const { currency = "INR", locale = "en-IN", minimumFractionDigits, maximumFractionDigits, noDecimals } = opts ?? {};
 
   const formatOptions: Intl.NumberFormatOptions = {
     style: "currency",

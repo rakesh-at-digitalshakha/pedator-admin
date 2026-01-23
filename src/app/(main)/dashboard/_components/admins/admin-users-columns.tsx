@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteAdmin } from "@/hooks/api";
+import { formatCurrency } from "@/lib/utils";
 import type { AdminUser } from "@/types/api";
 
 type AdminUsersColumnsProps = {
@@ -56,7 +57,7 @@ export const adminUsersColumns = ({ onEdit, onDeleteSuccess }: AdminUsersColumns
     header: "Wallet Balance",
     cell: ({ row }) => {
       const wallet = row.getValue<number>("wallet");
-      return <div className="font-semibold tabular-nums">${wallet.toLocaleString()}</div>;
+      return <div className="font-semibold tabular-nums">{formatCurrency(wallet)}</div>;
     },
     enableSorting: false,
   },
@@ -65,7 +66,7 @@ export const adminUsersColumns = ({ onEdit, onDeleteSuccess }: AdminUsersColumns
     header: "Real Wallet",
     cell: ({ row }) => {
       const realWallet = row.getValue<number>("realWallet");
-      return <div className="tabular-nums">${realWallet.toLocaleString()}</div>;
+      return <div className="tabular-nums">{formatCurrency(realWallet)}</div>;
     },
     enableSorting: false,
   },
@@ -74,7 +75,7 @@ export const adminUsersColumns = ({ onEdit, onDeleteSuccess }: AdminUsersColumns
     header: "Virtual Wallet",
     cell: ({ row }) => {
       const virtualWallet = row.getValue<number>("virtualWallet");
-      return <div className="tabular-nums">${virtualWallet.toLocaleString()}</div>;
+      return <div className="tabular-nums">{formatCurrency(virtualWallet)}</div>;
     },
     enableSorting: false,
   },

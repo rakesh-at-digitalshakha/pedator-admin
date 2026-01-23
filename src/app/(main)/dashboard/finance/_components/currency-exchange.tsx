@@ -15,7 +15,7 @@ function CurrencySelector(props: { defaultValue: string }) {
         <SelectValue placeholder="Currency" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="usd">USD</SelectItem>
+        <SelectItem value="inr">INR</SelectItem>
         <SelectItem value="eur">EUR</SelectItem>
         <SelectItem value="gbp">GBP</SelectItem>
         <SelectItem value="aed">AED</SelectItem>
@@ -35,7 +35,7 @@ export function CurrencyExchange() {
           <div className="border-b px-4 py-2">
             <div className="flex justify-between">
               <div className="flex flex-1 justify-center">
-                <CurrencySelector defaultValue="usd" />
+                <CurrencySelector defaultValue="inr" />
               </div>
               <Separator orientation="vertical" className="!h-auto" />
               <div className="flex flex-1 items-center justify-center">
@@ -54,7 +54,7 @@ export function CurrencyExchange() {
             </p>
           </div>
           <div className="bg-muted border-t py-1 text-center text-xs tabular-nums">
-            <span className="text-muted-foreground">1 USD = </span> 0.85 EUR
+            <span className="text-muted-foreground">1 INR = </span> 0.012 EUR
           </div>
         </div>
 

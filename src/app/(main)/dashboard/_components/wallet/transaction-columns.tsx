@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { formatCurrency } from "@/lib/utils";
 import type { Transaction } from "@/types/api";
 
 const statusColors: Record<Transaction["status"], "default" | "secondary" | "destructive" | "outline"> = {
@@ -94,7 +95,7 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
     cell: ({ row }) => {
       const amount = row.getValue<number>("amount");
-      return <div className="font-semibold tabular-nums">${amount.toLocaleString()}</div>;
+      return <div className="font-semibold tabular-nums">{formatCurrency(amount)}</div>;
     },
   },
   {

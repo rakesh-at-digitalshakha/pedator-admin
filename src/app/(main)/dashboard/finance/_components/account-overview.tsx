@@ -107,11 +107,11 @@ export function AccountOverview() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Spending Limit</span>
-                  <span className="font-medium tabular-nums">$62,000.00</span>
+                  <span className="font-medium tabular-nums">{formatCurrency(62000, { noDecimals: true })}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Available Balance</span>
-                  <span className="font-medium tabular-nums">$13,100.06</span>
+                  <span className="font-medium tabular-nums">{formatCurrency(13100.06)}</span>
                 </div>
               </div>
 

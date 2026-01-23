@@ -6,6 +6,7 @@ import { Wallet, ArrowDownToLine, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -57,7 +58,7 @@ export function WalletCard() {
       { amount: withdrawAmount },
       {
         onSuccess: () => {
-          toast.success(`Successfully withdrew $${withdrawAmount}`);
+          toast.success(`Successfully withdrew ${formatCurrency(withdrawAmount)}`);
           updateWallet(user.wallet - withdrawAmount);
           setIsDialogOpen(false);
           setAmount("");
@@ -86,7 +87,7 @@ export function WalletCard() {
         <CardHeader>
           <CardDescription>Total Balance</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <Wallet className="text-muted-foreground size-5" />${user.wallet.toLocaleString()}
+            <Wallet className="text-muted-foreground size-5" />{formatCurrency(user.wallet)}
           </CardTitle>
           <CardAction>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -117,7 +118,7 @@ export function WalletCard() {
                         required
                       />
                       <p className="text-muted-foreground text-sm">
-                        Available balance: ${user.wallet.toLocaleString()}
+                        Available balance: {formatCurrency(user.wallet)}
                       </p>
                     </div>
                   </div>
@@ -143,7 +144,7 @@ export function WalletCard() {
         <CardHeader>
           <CardDescription>Real Wallet</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <Plus className="text-muted-foreground size-5" />${user.realWallet.toLocaleString()}
+            <Plus className="text-muted-foreground size-5" />{formatCurrency(user.realWallet)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">Finalized</Badge>
@@ -158,7 +159,7 @@ export function WalletCard() {
         <CardHeader>
           <CardDescription>Virtual Wallet</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <Minus className="text-muted-foreground size-5" />${user.virtualWallet.toLocaleString()}
+            <Minus className="text-muted-foreground size-5" />{formatCurrency(user.virtualWallet)}
           </CardTitle>
           <CardAction>
             <Badge variant="secondary">Pending</Badge>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { BadgeCheck, Bell, CreditCard, LogOut, Wallet } from "lucide-react";
@@ -15,7 +16,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatCurrency } from "@/lib/utils";
 import { useAdminStore } from "@/stores/admin/admin-provider";
 import { useAuthStore } from "@/stores/auth/auth-provider";
 
@@ -23,6 +24,11 @@ export function AccountSwitcher() {
   const router = useRouter();
   const { user } = useAdminStore((state) => state);
   const logout = useAuthStore((state) => state.logout);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -30,8 +36,8 @@ export function AccountSwitcher() {
     router.push("/auth/login");
   };
 
-  if (!user) {
-    return null;
+  if (!mounted || !user) {
+    return <div className="size-9" />;
   }
 
   return (
@@ -63,7 +69,7 @@ export function AccountSwitcher() {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/dashboard/wallet")}>
             <Wallet />
-            Wallet ({user.wallet?.toFixed(2) || "0.00"})
+            Wallet ({formatCurrency(user.wallet || 0, { noDecimals: true })})
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/dashboard/notifications")}>
             <Bell />

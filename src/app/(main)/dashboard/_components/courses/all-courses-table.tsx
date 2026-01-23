@@ -79,7 +79,7 @@ export function AllCoursesTable() {
   const { data: subCategoriesData } = useGetAllSubCategories();
   const { data: mentorsData } = useGetAllMentors({ page: 1, limit: 100 });
 
-  const courses = coursesData?.data?.data ?? [];
+  const courses = coursesData?.data ?? [];
 
   const handleEdit = React.useCallback((course: Course) => {
     setEditingCourse(course);

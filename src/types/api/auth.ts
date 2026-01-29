@@ -23,4 +23,16 @@ export type LoginResponse = {
     updatedAt: string;
   };
   token: string;
+  refreshToken: string;
+};
+
+export type RefreshTokenRequest = {
+  refreshToken: string;
+};
+
+export type RefreshTokenResponse = {
+  status: string;
+  message: string;
+  token: string;
+  refreshToken: string;
 };

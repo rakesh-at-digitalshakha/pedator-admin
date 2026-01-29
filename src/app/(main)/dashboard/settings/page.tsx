@@ -74,12 +74,12 @@ export default function SettingsPage() {
                   <FormItem>
                     <FormLabel>Provider</FormLabel>
                     <FormControl>
-                      <Select value={field.value || "select"} onValueChange={(v) => field.onChange(v === "select" ? "" : v)}>
+                      <Select value={field.value || ""} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select provider" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="select">-- Select a provider --</SelectItem>
+                          <SelectItem value="">-- Select a provider --</SelectItem>
                           <SelectItem value="stripe">Stripe</SelectItem>
                           <SelectItem value="razorpay">Razorpay</SelectItem>
                           <SelectItem value="paypal">PayPal</SelectItem>

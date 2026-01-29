@@ -23,7 +23,7 @@ const FormSchema = z.object({
 
 export function LoginForm() {
   const router = useRouter();
-  const setToken = useAuthStore((state) => state.setToken);
+  const setTokens = useAuthStore((state) => state.setTokens);
   const setUser = useAdminStore((state) => state.setUser);
   const { mutate: login, isPending } = useLogin();
 
@@ -44,8 +44,8 @@ export function LoginForm() {
       },
       {
         onSuccess: (response) => {
-          // Store token and user data
-          setToken(response.token);
+          // Store tokens and user data
+          setTokens(response.token, response.refreshToken);
           setUser(response.user);
 
           toast.success("Login successful", {

@@ -49,10 +49,10 @@ export const bookingColumns = ({ onEdit }: BookingColumnsProps = {}): ColumnDef<
     header: ({ column }) => <DataTableColumnHeader column={column} title="Course" />,
     cell: ({ row }) => {
       const booking = row.original;
-      const coursePrice = booking.courseId.price ?? booking.amount ?? booking.razorpayDetails?.amount ?? 0;
+      const coursePrice = booking.courseId?.price ?? booking.amount ?? booking.razorpayDetails?.amount ?? 0;
       return (
         <div className="flex max-w-xs flex-col">
-          <span className="truncate font-medium">{booking.courseId.title}</span>
+          <span className="truncate font-medium">{booking.courseId?.title ?? "N/A"}</span>
           <span className="text-muted-foreground text-xs">
             Course Price: ₹{coursePrice.toFixed(2)}
           </span>
@@ -65,6 +65,9 @@ export const bookingColumns = ({ onEdit }: BookingColumnsProps = {}): ColumnDef<
     header: "Student",
     cell: ({ row }) => {
       const booking = row.original;
+      if (!booking.learnerId) {
+        return <span className="text-muted-foreground text-sm">N/A</span>;
+      }
       return (
         <div className="flex flex-col">
           <span className="text-sm font-medium">
@@ -82,6 +85,9 @@ export const bookingColumns = ({ onEdit }: BookingColumnsProps = {}): ColumnDef<
     header: "Mentor",
     cell: ({ row }) => {
       const booking = row.original;
+      if (!booking.mentorId) {
+        return <span className="text-muted-foreground text-sm">N/A</span>;
+      }
       return (
         <div className="flex flex-col">
           <span className="text-sm font-medium">
@@ -107,6 +113,9 @@ export const bookingColumns = ({ onEdit }: BookingColumnsProps = {}): ColumnDef<
     header: "Slot Time",
     cell: ({ row }) => {
       const booking = row.original;
+      if (!booking.courseSlotId) {
+        return <span className="text-muted-foreground text-sm">N/A</span>;
+      }
       return (
         <div className="text-sm">
           <div>{new Date(booking.courseSlotId.slotDate).toLocaleDateString()}</div>

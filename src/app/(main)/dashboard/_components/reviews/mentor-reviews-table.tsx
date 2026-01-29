@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { Search } from "lucide-react";
 
 import { DataTable } from "@/components/data-table/data-table";
@@ -40,7 +41,7 @@ export function MentorReviewsTable() {
   }, [searchValue]);
 
   const { data: reviewsData, isLoading, error } = useGetMentorReviews(filters);
-  
+
   // Fetch mentors, learners, and courses for filters
   const { data: mentorsData } = useGetAllMentors({ limit: 1000 });
   const { data: learnersData } = useGetAllLearners({ limit: 1000 });
@@ -115,17 +116,15 @@ export function MentorReviewsTable() {
 
   if (error) {
     return (
-      <div className="text-destructive">
-        {error instanceof Error ? error.message : "An unknown error occurred"}
-      </div>
+      <div className="text-destructive">{error instanceof Error ? error.message : "An unknown error occurred"}</div>
     );
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative max-w-sm min-w-50 flex-1">
+          <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
           <Input
             placeholder="Search reviews..."
             value={searchValue}
@@ -134,7 +133,7 @@ export function MentorReviewsTable() {
           />
         </div>
         <Select value={mentorFilter} onValueChange={handleMentorChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-50">
             <SelectValue placeholder="Filter by mentor" />
           </SelectTrigger>
           <SelectContent>
@@ -147,7 +146,7 @@ export function MentorReviewsTable() {
           </SelectContent>
         </Select>
         <Select value={learnerFilter} onValueChange={handleLearnerChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-50">
             <SelectValue placeholder="Filter by learner" />
           </SelectTrigger>
           <SelectContent>

@@ -125,16 +125,16 @@ export default function ActivityLogsTable() {
         />
         <Select
           onValueChange={(v) => {
-            setAction(v || undefined);
+            setAction(v === "all" ? undefined : v);
             setPage(1);
           }}
-          value={action || ""}
+          value={action || "all"}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Action" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Actions</SelectItem>
+            <SelectItem value="all">All Actions</SelectItem>
             {uniqueActions.map((act) => (
               <SelectItem key={act} value={act}>
                 {act.replace(/_/g, " ")}
@@ -144,16 +144,16 @@ export default function ActivityLogsTable() {
         </Select>
         <Select
           onValueChange={(v) => {
-            setStatus(v || undefined);
+            setStatus(v === "all" ? undefined : v);
             setPage(1);
           }}
-          value={status || ""}
+          value={status || "all"}
         >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="success">Success</SelectItem>
             <SelectItem value="failed">Failed</SelectItem>
           </SelectContent>

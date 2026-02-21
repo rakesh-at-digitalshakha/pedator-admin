@@ -92,16 +92,16 @@ export default function BannersTable() {
           />
           <Select
             onValueChange={(v) => {
-              setStatus(v || undefined);
+              setStatus(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={status || ""}
+            value={status || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>

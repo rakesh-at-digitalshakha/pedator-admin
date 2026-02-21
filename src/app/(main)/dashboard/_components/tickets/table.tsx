@@ -21,7 +21,13 @@ export default function TicketsTable() {
   const [selectedTicket, setSelectedTicket] = useState<TicketRow | null>(null);
 
   const params = useMemo(
-    () => ({ search, status: status ?? "", priority: priority ?? "", page, limit }),
+    () => ({ 
+      search, 
+      status: status === "all" ? "" : (status ?? ""), 
+      priority: priority === "all" ? "" : (priority ?? ""), 
+      page, 
+      limit 
+    }),
     [search, status, priority, page, limit]
   );
 
@@ -97,16 +103,16 @@ export default function TicketsTable() {
           />
           <Select
             onValueChange={(v) => {
-              setStatus(v || undefined);
+              setStatus(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={status || ""}
+            value={status || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="open">Open</SelectItem>
               <SelectItem value="assigned">Assigned</SelectItem>
               <SelectItem value="resolved">Resolved</SelectItem>
@@ -114,16 +120,16 @@ export default function TicketsTable() {
           </Select>
           <Select
             onValueChange={(v) => {
-              setPriority(v || undefined);
+              setPriority(v === "all" ? undefined : v);
               setPage(1);
             }}
-            value={priority || ""}
+            value={priority || "all"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Priority" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Priorities</SelectItem>
+              <SelectItem value="all">All Priorities</SelectItem>
               <SelectItem value="low">Low</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="high">High</SelectItem>

@@ -24,7 +24,7 @@ export function PopularCoursesChart({ data, isLoading }: PopularCoursesChartProp
     <Card>
       <CardHeader>
         <CardTitle>Top Courses</CardTitle>
-        <CardDescription>Most popular courses by enrollment</CardDescription>
+        <CardDescription>Most popular courses by bookings and ratings</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -37,7 +37,7 @@ export function PopularCoursesChart({ data, isLoading }: PopularCoursesChartProp
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="enrollmentCount" fill="#f59e0b" name="Enrollments" />
+              <Bar dataKey="bookingCount" fill="#f59e0b" name="Bookings" />
               <Bar dataKey="averageRating" fill="#10b981" name="Avg Rating" />
             </BarChart>
           </ResponsiveContainer>

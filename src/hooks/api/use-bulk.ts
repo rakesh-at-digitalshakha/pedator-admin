@@ -2,23 +2,18 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/api/v1/admin";
+import { apiClient } from "@/lib/api/client";
+import type { ApiResponse } from "@/lib/api/types";
 
-async function postJSON<T>(url: string, body?: unknown) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
+const BASE = "/admin";
 
 export function useBulkImportUsers() {
   return useMutation({
     mutationKey: ["bulk", "users", "import"],
-    mutationFn: (payload: unknown) => postJSON(`${BASE}/users/bulk-import`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/users/bulk-import`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Users imported"),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -27,7 +22,10 @@ export function useBulkImportUsers() {
 export function useBulkExportUsers() {
   return useMutation({
     mutationKey: ["bulk", "users", "export"],
-    mutationFn: (payload?: unknown) => postJSON(`${BASE}/users/bulk-export`, payload),
+    mutationFn: async (payload?: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/users/bulk-export`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Users export started"),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -36,7 +34,10 @@ export function useBulkExportUsers() {
 export function useBulkSendNotifications() {
   return useMutation({
     mutationKey: ["bulk", "notifications", "send"],
-    mutationFn: (payload: unknown) => postJSON(`${BASE}/notifications/bulk-send`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/notifications/bulk-send`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Notifications sent"),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -45,7 +46,10 @@ export function useBulkSendNotifications() {
 export function useBulkApproveCourses() {
   return useMutation({
     mutationKey: ["bulk", "courses", "approve"],
-    mutationFn: (payload: { courseIds: string[] }) => postJSON(`${BASE}/courses/bulk-approve`, payload),
+    mutationFn: async (payload: { courseIds: string[] }) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/courses/bulk-approve`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Courses approved"),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -54,7 +58,10 @@ export function useBulkApproveCourses() {
 export function useBulkApproveMentors() {
   return useMutation({
     mutationKey: ["bulk", "mentors", "approve"],
-    mutationFn: (payload: { mentorIds: string[] }) => postJSON(`${BASE}/mentors/bulk-approve`, payload),
+    mutationFn: async (payload: { mentorIds: string[] }) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/mentors/bulk-approve`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Mentors approved"),
     onError: (e: Error) => toast.error(e.message),
   });

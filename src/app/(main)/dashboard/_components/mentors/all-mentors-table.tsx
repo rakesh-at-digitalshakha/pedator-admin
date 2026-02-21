@@ -115,6 +115,28 @@ export function AllMentorsTable() {
     );
   }, [rejectMentor, rejectingMentor, rejectionReason]);
 
+  const handleDeactivate = React.useCallback((mentor: MentorUser) => {
+    const action = mentor.isDeactivated ? "reactivate" : "deactivate";
+    if (confirm(`Are you sure you want to ${action} ${mentor.firstName} ${mentor.lastName}?`)) {
+      updateMentor(
+        {
+          id: mentor._id,
+          data: { isDeactivated: !mentor.isDeactivated },
+        },
+        {
+          onSuccess: () => {
+            toast.success(
+              `${mentor.firstName} ${mentor.lastName} has been ${action}d successfully`
+            );
+          },
+          onError: (error: any) => {
+            toast.error(error.response?.data?.message || `Failed to ${action} mentor`);
+          },
+        }
+      );
+    }
+  }, [updateMentor]);
+
   const columns = React.useMemo(
     () =>
       allMentorsColumns({
@@ -122,10 +144,11 @@ export function AllMentorsTable() {
         onDelete: handleDelete,
         onApprove: handleApprove,
         onReject: handleReject,
+        onDeactivate: handleDeactivate,
         isApproving,
         isRejecting,
       }),
-    [handleEdit, handleDelete, handleApprove, handleReject, isApproving, isRejecting],
+    [handleEdit, handleDelete, handleApprove, handleReject, handleDeactivate, isApproving, isRejecting],
   );
 
   const table = useDataTableInstance({

@@ -15,7 +15,7 @@ export function TopMentors({ data, isLoading }: TopMentorsProps) {
     <Card>
       <CardHeader>
         <CardTitle>Top Mentors</CardTitle>
-        <CardDescription>Most popular mentors by enrollment and ratings</CardDescription>
+        <CardDescription>Most popular mentors by bookings and ratings</CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -30,11 +30,13 @@ export function TopMentors({ data, isLoading }: TopMentorsProps) {
                   </div>
                   <div>
                     <p className="font-medium">{mentor.fullName}</p>
-                    <p className="text-xs text-muted-foreground">{formatNumber(mentor.enrollmentCount)} enrollments</p>
+                    <p className="text-xs text-muted-foreground">{formatNumber(mentor.bookingCount)} bookings</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-yellow-500">★ {mentor.averageRating.toFixed(1)}</p>
+                  <p className="font-semibold text-yellow-500">
+                    ★ {(mentor.averageRating || 0).toFixed(1)}
+                  </p>
                   <p className="text-xs text-muted-foreground">Average rating</p>
                 </div>
               </div>

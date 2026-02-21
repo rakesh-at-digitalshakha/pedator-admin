@@ -80,6 +80,7 @@ export const useRejectCourse = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ["courses", "pending"] });
     },
   });
 };

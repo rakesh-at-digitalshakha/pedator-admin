@@ -2,42 +2,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/api/v1/admin";
+import { apiClient } from "@/lib/api/client";
+import type { ApiResponse } from "@/lib/api/types";
 
-async function getJSON<T>(url: string) {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-
-async function putJSON<T>(url: string, body: unknown) {
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-
-async function postJSON<T>(url: string, body?: unknown) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
+const BASE = "/admin";
 
 export function usePlatformSettings() {
   const qc = useQueryClient();
-  const query = useQuery({ queryKey: ["settings"], queryFn: () => getJSON(`${BASE}/settings`) });
+  const query = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/settings`);
+      return response.data;
+    }
+  });
   const update = useMutation({
     mutationKey: ["settings", "update"],
-    mutationFn: (payload: unknown) => putJSON(`${BASE}/settings`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.put<ApiResponse<any>>(`${BASE}/settings`, payload);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Settings updated");
       qc.invalidateQueries({ queryKey: ["settings"] });
@@ -51,11 +35,17 @@ export function usePaymentGatewaySettings() {
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: ["settings", "payment"],
-    queryFn: () => getJSON(`${BASE}/settings/payment-gateways`),
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/settings/payment-gateways`);
+      return response.data;
+    },
   });
   const update = useMutation({
     mutationKey: ["settings", "payment", "update"],
-    mutationFn: (payload: unknown) => putJSON(`${BASE}/settings/payment-gateways`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.put<ApiResponse<any>>(`${BASE}/settings/payment-gateways`, payload);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Payment gateways updated");
       qc.invalidateQueries({ queryKey: ["settings", "payment"] });
@@ -68,7 +58,10 @@ export function usePaymentGatewaySettings() {
 export function useMaintenanceMode() {
   return useMutation({
     mutationKey: ["settings", "maintenance"],
-    mutationFn: (payload: { enabled: boolean }) => postJSON(`${BASE}/settings/maintenance`, payload),
+    mutationFn: async (payload: { enabled: boolean }) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/settings/maintenance`, payload);
+      return response.data;
+    },
     onSuccess: () => toast.success("Maintenance mode toggled"),
     onError: (e: Error) => toast.error(e.message),
   });

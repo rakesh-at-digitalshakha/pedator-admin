@@ -193,3 +193,15 @@ export const useSaveFcmToken = () => {
     },
   });
 };
+
+/**
+ * Reset admin password (Super Admin only)
+ */
+export const useResetAdminPassword = () => {
+  return useMutation<ApiResponse<void>, AxiosError, { id: string; password: string }>({
+    mutationFn: async ({ id, password }) => {
+      const response = await apiClient.post<ApiResponse<void>>(`/admin/admins/${id}/reset-password`, { password });
+      return response.data;
+    },
+  });
+};

@@ -13,8 +13,8 @@ interface KPICardsProps {
 export function KPICards({ data, isLoading }: KPICardsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        {[...Array(6)].map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, i) => (
           <Skeleton key={i} className="h-24" />
         ))}
       </div>
@@ -46,11 +46,6 @@ export function KPICards({ data, isLoading }: KPICardsProps) {
       change: "Lifetime earnings",
     },
     {
-      title: "Enrollments",
-      value: formatNumber(overview?.totalEnrollments),
-      change: `+${formatNumber(last24Hours?.newEnrollments)} today`,
-    },
-    {
       title: "Active Sessions",
       value: formatNumber(overview?.activeSessions),
       change: "Currently active",
@@ -58,7 +53,7 @@ export function KPICards({ data, isLoading }: KPICardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       {cards.map((card) => (
         <Card key={card.title}>
           <CardHeader className="pb-3">

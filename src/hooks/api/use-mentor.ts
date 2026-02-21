@@ -7,7 +7,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
 import { apiClient } from "@/lib/api/client";
-import type { ApiResponse, MentorFilters, MentorUser } from "@/types/api";
+import type { ApiResponse, MentorFilters, MentorUser, CreateMentorRequest } from "@/types/api";
+
+const BASE = "/admin";
 
 /**
  * Get all mentors with filters
@@ -24,7 +26,7 @@ export const useGetAllMentors = (filters?: MentorFilters) => {
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
       if (filters?.order) params.append("order", filters.order);
 
-      const response = await apiClient.get<ApiResponse<MentorUser[]>>(`/mentor/all?${params.toString()}`);
+      const response = await apiClient.get<ApiResponse<MentorUser[]>>(`${BASE}/mentors?${params.toString()}`);
       return response.data;
     },
   });
@@ -37,7 +39,7 @@ export const useGetMentorById = (id: string) => {
   return useQuery({
     queryKey: ["mentor", id],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<MentorUser>>(`/mentor/${id}`);
+      const response = await apiClient.get<ApiResponse<MentorUser>>(`${BASE}/mentors/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -59,7 +61,7 @@ export const useGetUnapprovedMentors = (filters?: MentorFilters) => {
       if (filters?.order) params.append("order", filters.order);
 
       const response = await apiClient.get<ApiResponse<MentorUser[]>>(
-        `/admin/unapproved-mentors?${params.toString()}`
+        `${BASE}/unapproved-mentors?${params.toString()}`
       );
       return response.data;
     },
@@ -74,7 +76,7 @@ export const useApproveMentor = () => {
 
   return useMutation<ApiResponse<MentorUser>, AxiosError, string>({
     mutationFn: async (mentorId) => {
-      const response = await apiClient.patch<ApiResponse<MentorUser>>(`/admin/mentors/${mentorId}/approve`);
+      const response = await apiClient.patch<ApiResponse<MentorUser>>(`${BASE}/mentors/${mentorId}/approve`);
       return response.data;
     },
     onSuccess: () => {
@@ -94,7 +96,7 @@ export const useRejectMentor = () => {
 
   return useMutation<ApiResponse<void>, AxiosError, { mentorId: string; rejectionReason?: string }>({
     mutationFn: async ({ mentorId, rejectionReason }) => {
-      const response = await apiClient.patch<ApiResponse<void>>(`/admin/mentors/${mentorId}/reject`, {
+      const response = await apiClient.patch<ApiResponse<void>>(`${BASE}/mentors/${mentorId}/reject`, {
         rejectionReason,
       });
       return response.data;
@@ -115,7 +117,7 @@ export const useUpdateMentor = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<MentorUser> }) => {
-      const response = await apiClient.put<ApiResponse<MentorUser>>(`/mentor/admin/${id}`, data);
+      const response = await apiClient.put<ApiResponse<MentorUser>>(`${BASE}/mentors/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -132,7 +134,7 @@ export const useCreateMentor = () => {
 
   return useMutation<ApiResponse<MentorUser>, AxiosError, CreateMentorRequest>({
     mutationFn: async (data) => {
-      const response = await apiClient.post<ApiResponse<MentorUser>>("/admin/mentors", data);
+      const response = await apiClient.post<ApiResponse<MentorUser>>(`${BASE}/mentors`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -150,7 +152,7 @@ export const useDeleteMentor = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete<ApiResponse<void>>(`/mentor/admin/${id}`);
+      const response = await apiClient.delete<ApiResponse<void>>(`${BASE}/mentors/${id}`);
       return response.data;
     },
     onSuccess: () => {

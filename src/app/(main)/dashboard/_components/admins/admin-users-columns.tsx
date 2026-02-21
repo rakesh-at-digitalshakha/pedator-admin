@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { MoreHorizontal, Trash2, Edit, LockKeyhole } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +20,15 @@ import type { AdminUser } from "@/types/api";
 
 type AdminUsersColumnsProps = {
   onEdit?: (admin: AdminUser) => void;
+  onResetPassword?: (admin: AdminUser) => void;
   onDeleteSuccess?: () => void;
 };
 
-export const adminUsersColumns = ({ onEdit, onDeleteSuccess }: AdminUsersColumnsProps = {}): ColumnDef<AdminUser>[] => [
+export const adminUsersColumns = ({
+  onEdit,
+  onResetPassword,
+  onDeleteSuccess,
+}: AdminUsersColumnsProps = {}): ColumnDef<AdminUser>[] => [
   {
     accessorKey: "email",
     header: "Email",
@@ -124,6 +129,10 @@ export const adminUsersColumns = ({ onEdit, onDeleteSuccess }: AdminUsersColumns
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(admin._id)}>Copy admin ID</DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onResetPassword?.(admin)}>
+              <LockKeyhole className="mr-2 size-4" />
+              Reset Password
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEdit}>
               <Edit className="mr-2 size-4" />
               Edit admin

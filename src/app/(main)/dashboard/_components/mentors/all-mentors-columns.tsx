@@ -21,6 +21,7 @@ type AllMentorsColumnsProps = {
   onDelete?: (mentor: MentorUser) => void;
   onApprove?: (mentor: MentorUser) => void;
   onReject?: (mentor: MentorUser) => void;
+  onDeactivate?: (mentor: MentorUser) => void;
   isApproving?: boolean;
   isRejecting?: boolean;
 };
@@ -52,9 +53,24 @@ export const allMentorsColumns = ({
     enableSorting: false,
   },
   {
-    accessorKey: "phoneNumber",
-    header: "Phone",
-    cell: ({ row }) => <div>{row.getValue("phoneNumber") || "-"}</div>,
+    accessorKey: "mobile",
+    header: "Mobile",
+    cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("mobile") || "-"}</div>,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "country",
+    header: "Country",
+    cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("country") || "-"}</div>,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "numberOfExperience",
+    header: "Experience",
+    cell: ({ row }) => {
+      const experience = row.getValue("numberOfExperience") as number;
+      return <div className="text-muted-foreground">{experience ? `${experience} years` : "-"}</div>;
+    },
     enableSorting: false,
   },
   {
@@ -82,10 +98,14 @@ export const allMentorsColumns = ({
       const isApproved = row.getValue("isProfileApproved");
       const isRejected = row.original.isProfileRejected;
       const isBlocked = row.original.isBlocked;
+      const isDeactivated = row.original.isDeactivated;
       const rejectionReason = row.original.rejectionReason;
 
       if (isBlocked) {
         return <Badge variant="destructive">Blocked</Badge>;
+      }
+      if (isDeactivated) {
+        return <Badge variant="outline" className="text-orange-600 border-orange-600">Deactivated</Badge>;
       }
       if (isApproved) {
         return <Badge variant="default">Approved</Badge>;
@@ -146,6 +166,14 @@ export const allMentorsColumns = ({
               <Edit className="mr-2 size-4" />
               Edit mentor
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {/* Deactivate/Reactivate action */}
+            {mentor.isProfileApproved && (
+              <DropdownMenuItem onClick={() => onDeactivate?.(mentor)} disabled={isPending}>
+                <X className="mr-2 size-4 text-orange-600" />
+                {mentor.isDeactivated ? "Reactivate" : "Deactivate"} Mentor
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             {/* Approve action - show for pending or rejected mentors */}
             {!mentor.isProfileApproved && (

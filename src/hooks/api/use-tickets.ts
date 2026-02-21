@@ -2,35 +2,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/api/v1/admin";
+import { apiClient } from "@/lib/api/client";
+import type { ApiResponse } from "@/lib/api/types";
 
-async function getJSON<T>(url: string) {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-
-async function patchJSON<T>(url: string, body?: unknown) {
-  const res = await fetch(url, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
+const BASE = "/admin";
 
 export function useTickets(params?: Record<string, string | number | boolean>) {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return useQuery({ queryKey: ["tickets", params], queryFn: () => getJSON(`${BASE}/tickets${qs}`) });
+  return useQuery({
+    queryKey: ["tickets", params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/tickets${qs}`);
+      return response.data;
+    }
+  });
 }
 
 export function useTicket(id?: string) {
   return useQuery({
     enabled: !!id,
     queryKey: ["tickets", "detail", id],
-    queryFn: () => getJSON(`${BASE}/tickets/${id}`),
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/tickets/${id}`);
+      return response.data;
+    },
   });
 }
 
@@ -38,8 +33,10 @@ export function useAssignTicket() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["tickets", "assign"],
-    mutationFn: (vars: { id: string; adminId: string }) =>
-      patchJSON(`${BASE}/tickets/${vars.id}/assign`, { adminId: vars.adminId }),
+    mutationFn: async (vars: { id: string; adminId: string }) => {
+      const response = await apiClient.patch<ApiResponse<any>>(`${BASE}/tickets/${vars.id}/assign`, { adminId: vars.adminId });
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Ticket assigned");
       qc.invalidateQueries({ queryKey: ["tickets"] });
@@ -52,8 +49,10 @@ export function useUpdateTicketStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["tickets", "status"],
-    mutationFn: (vars: { id: string; status: string }) =>
-      patchJSON(`${BASE}/tickets/${vars.id}/status`, { status: vars.status }),
+    mutationFn: async (vars: { id: string; status: string }) => {
+      const response = await apiClient.patch<ApiResponse<any>>(`${BASE}/tickets/${vars.id}/status`, { status: vars.status });
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Ticket status updated");
       qc.invalidateQueries({ queryKey: ["tickets"] });
@@ -65,8 +64,10 @@ export function useUpdateTicketStatus() {
 export function useReplyTicket() {
   return useMutation({
     mutationKey: ["tickets", "reply"],
-    mutationFn: (vars: { id: string; message: string }) =>
-      patchJSON(`${BASE}/tickets/${vars.id}/reply`, { message: vars.message }),
+    mutationFn: async (vars: { id: string; message: string }) => {
+      const response = await apiClient.patch<ApiResponse<any>>(`${BASE}/tickets/${vars.id}/reply`, { message: vars.message });
+      return response.data;
+    },
     onSuccess: () => toast.success("Replied to ticket"),
     onError: (e: Error) => toast.error(e.message),
   });

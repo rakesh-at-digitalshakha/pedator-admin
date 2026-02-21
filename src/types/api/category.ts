@@ -7,6 +7,10 @@ export type Category = {
   name: string;
   description?: string;
   image?: string;
+  icon?: string;
+  displayLevel?: string;
+  themeColor?: string;
+  textColor?: string;
   status: boolean;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +30,10 @@ export type CreateCategoryRequest = {
   name: string;
   description?: string;
   image?: string;
+  icon?: string;
+  displayLevel?: string;
+  themeColor?: string;
+  textColor?: string;
   status?: boolean;
 };
 

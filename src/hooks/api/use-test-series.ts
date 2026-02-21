@@ -2,30 +2,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/api/v1/admin";
+import { apiClient } from "@/lib/api/client";
+import type { ApiResponse } from "@/lib/api/types";
 
-async function getJSON<T>(url: string) {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-
-async function delJSON<T>(url: string) {
-  const res = await fetch(url, { method: "DELETE", credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
+const BASE = "/admin";
 
 export function useTestSeries(params?: Record<string, string | number | boolean>) {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return useQuery({ queryKey: ["test-series", params], queryFn: () => getJSON(`${BASE}/test-series${qs}`) });
+  return useQuery({
+    queryKey: ["test-series", params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/test-series${qs}`);
+      return response.data;
+    }
+  });
 }
 
 export function useTestSeriesDetail(id?: string) {
   return useQuery({
     enabled: !!id,
     queryKey: ["test-series", "detail", id],
-    queryFn: () => getJSON(`${BASE}/test-series/${id}`),
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/test-series/${id}`);
+      return response.data;
+    },
   });
 }
 
@@ -33,7 +33,10 @@ export function useTestSeriesResults(id?: string) {
   return useQuery({
     enabled: !!id,
     queryKey: ["test-series", "results", id],
-    queryFn: () => getJSON(`${BASE}/test-series/${id}/results`),
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/test-series/${id}/results`);
+      return response.data;
+    },
   });
 }
 
@@ -41,7 +44,10 @@ export function useDeleteTestSeries() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["test-series", "delete"],
-    mutationFn: (id: string) => delJSON(`${BASE}/test-series/${id}`),
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete<ApiResponse<any>>(`${BASE}/test-series/${id}`);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Test series deleted");
       qc.invalidateQueries({ queryKey: ["test-series"] });

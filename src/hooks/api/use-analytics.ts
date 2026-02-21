@@ -30,13 +30,12 @@ export type UserGrowthAnalytics = {
 };
 
 export type EngagementAnalytics = {
-  enrollmentRate: string;
   sessionCompletionRate: string;
   averageRatingTrend: Array<{ _id: string; avgRating: number; reviewCount: number }>;
-  popularCourses: Array<{ _id: string; title: string; enrollmentCount: number; averageRating: number }>;
-  popularMentors: Array<{ _id: string; fullName: string; enrollmentCount: number; averageRating: number }>;
+  popularCourses: Array<{ _id: string; title: string; averageRating: number }>;
+  popularMentors: Array<{ _id: string; fullName: string; averageRating: number }>;
   stats: {
-    totalEnrollments: number;
+    totalBookings: number;
     totalSessions: number;
     completedSessions: number;
   };
@@ -53,7 +52,7 @@ export type CoursePerformanceAnalytics = {
     _id: string;
     title: string;
     totalRevenue: number;
-    enrollmentCount: number;
+    bookingCount: number;
     averageRating: number;
   }>;
 };
@@ -64,7 +63,6 @@ export type DashboardOverview = {
     totalMentors: number;
     totalCourses: number;
     totalRevenue: number;
-    totalEnrollments: number;
     activeSessions: number;
   };
   pendingApprovals: {
@@ -75,7 +73,6 @@ export type DashboardOverview = {
     newLearners: number;
     newMentors: number;
     newCourses: number;
-    newEnrollments: number;
   };
 };
 

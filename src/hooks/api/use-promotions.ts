@@ -2,49 +2,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const BASE = "/api/v1/admin";
+import { apiClient } from "@/lib/api/client";
+import type { ApiResponse } from "@/lib/api/types";
 
-async function getJSON<T>(url: string) {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-async function postJSON<T>(url: string, body?: unknown) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-async function putJSON<T>(url: string, body?: unknown) {
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body ?? {}),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
-async function delJSON<T>(url: string) {
-  const res = await fetch(url, { method: "DELETE", credentials: "include" });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as T;
-}
+const BASE = "/admin";
 
 // Coupons
 export function useCoupons(params?: Record<string, string | number | boolean>) {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return useQuery({ queryKey: ["promotions", "coupons", params], queryFn: () => getJSON(`${BASE}/coupons${qs}`) });
+  return useQuery({
+    queryKey: ["promotions", "coupons", params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/coupons${qs}`);
+      return response.data;
+    }
+  });
 }
 export function useCreateCoupon() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "coupons", "create"],
-    mutationFn: (payload: unknown) => postJSON(`${BASE}/coupons`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/coupons`, payload);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Coupon created");
       qc.invalidateQueries({ queryKey: ["promotions", "coupons"] });
@@ -56,7 +37,10 @@ export function useUpdateCoupon() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "coupons", "update"],
-    mutationFn: (vars: { id: string; data: unknown }) => putJSON(`${BASE}/coupons/${vars.id}`, vars.data),
+    mutationFn: async (vars: { id: string; data: unknown }) => {
+      const response = await apiClient.put<ApiResponse<any>>(`${BASE}/coupons/${vars.id}`, vars.data);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Coupon updated");
       qc.invalidateQueries({ queryKey: ["promotions", "coupons"] });
@@ -68,7 +52,10 @@ export function useDeleteCoupon() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "coupons", "delete"],
-    mutationFn: (id: string) => delJSON(`${BASE}/coupons/${id}`),
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete<ApiResponse<any>>(`${BASE}/coupons/${id}`);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Coupon deleted");
       qc.invalidateQueries({ queryKey: ["promotions", "coupons"] });
@@ -80,13 +67,22 @@ export function useDeleteCoupon() {
 // Promotion campaigns
 export function usePromotions(params?: Record<string, string | number | boolean>) {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return useQuery({ queryKey: ["promotions", "campaigns", params], queryFn: () => getJSON(`${BASE}/promotions${qs}`) });
+  return useQuery({
+    queryKey: ["promotions", "campaigns", params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/promotions${qs}`);
+      return response.data;
+    }
+  });
 }
 export function useCreatePromotion() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "campaigns", "create"],
-    mutationFn: (payload: unknown) => postJSON(`${BASE}/promotions`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/promotions`, payload);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Promotion created");
       qc.invalidateQueries({ queryKey: ["promotions", "campaigns"] });
@@ -98,13 +94,22 @@ export function useCreatePromotion() {
 // Banners
 export function useBanners(params?: Record<string, string | number | boolean>) {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return useQuery({ queryKey: ["promotions", "banners", params], queryFn: () => getJSON(`${BASE}/banners${qs}`) });
+  return useQuery({
+    queryKey: ["promotions", "banners", params],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/banners${qs}`);
+      return response.data;
+    }
+  });
 }
 export function useCreateBanner() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "banners", "create"],
-    mutationFn: (payload: unknown) => postJSON(`${BASE}/banners`, payload),
+    mutationFn: async (payload: unknown) => {
+      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/banners`, payload);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Banner uploaded");
       qc.invalidateQueries({ queryKey: ["promotions", "banners"] });
@@ -116,7 +121,10 @@ export function useUpdateBanner() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "banners", "update"],
-    mutationFn: (vars: { id: string; data: unknown }) => putJSON(`${BASE}/banners/${vars.id}`, vars.data),
+    mutationFn: async (vars: { id: string; data: unknown }) => {
+      const response = await apiClient.put<ApiResponse<any>>(`${BASE}/banners/${vars.id}`, vars.data);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Banner updated");
       qc.invalidateQueries({ queryKey: ["promotions", "banners"] });
@@ -128,7 +136,10 @@ export function useDeleteBanner() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["promotions", "banners", "delete"],
-    mutationFn: (id: string) => delJSON(`${BASE}/banners/${id}`),
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete<ApiResponse<any>>(`${BASE}/banners/${id}`);
+      return response.data;
+    },
     onSuccess: () => {
       toast.success("Banner deleted");
       qc.invalidateQueries({ queryKey: ["promotions", "banners"] });

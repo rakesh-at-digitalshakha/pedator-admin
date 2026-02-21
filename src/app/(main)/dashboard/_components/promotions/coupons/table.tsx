@@ -121,23 +121,23 @@ export default function CouponsTable() {
               className="w-full sm:w-64"
             />
             
-            <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+            <Select value={status || "all"} onValueChange={(v) => { setStatus(v === "all" ? "" : v); setPage(1); }}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={discountType} onValueChange={(v) => { setDiscountType(v); setPage(1); }}>
+            <Select value={discountType || "all"} onValueChange={(v) => { setDiscountType(v === "all" ? "" : v); setPage(1); }}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="percentage">Percentage</SelectItem>
                 <SelectItem value="fixed">Fixed</SelectItem>
               </SelectContent>

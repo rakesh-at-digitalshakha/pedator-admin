@@ -8,7 +8,7 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
   experimental: {
-    middlewareNft: true,
+    // middlewareNft: true, // Removed invalid option
   },
   async redirects() {
     return [

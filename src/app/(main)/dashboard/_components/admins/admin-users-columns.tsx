@@ -39,9 +39,19 @@ export const adminUsersColumns = ({
     header: "Role",
     cell: ({ row }) => {
       const role = row.getValue<AdminUser["role"]>("role");
+      // role may be a populated Role object, null (populate failed), or undefined
+      const populated = role && typeof role === "object" && "name" in role;
+      const roleName = populated ? (role as AdminUser["role"]).name : null;
+      if (!roleName) {
+        return (
+          <Badge variant="outline" className="text-muted-foreground">
+            No Role
+          </Badge>
+        );
+      }
       return (
-        <Badge variant={role === "super-admin" ? "default" : "secondary"} className="capitalize">
-          {role === "super-admin" ? "Super Admin" : "Admin"}
+        <Badge variant={roleName === "super-admin" ? "default" : "secondary"} className="capitalize">
+          {roleName}
         </Badge>
       );
     },
@@ -109,7 +119,7 @@ export const adminUsersColumns = ({
               <Edit className="mr-2 size-4" />
               Edit admin
             </DropdownMenuItem>
-            {admin.role !== "super-admin" && (
+            {admin.role?.name !== "super-admin" && (
               <DropdownMenuItem onClick={handleDelete} disabled={isPending} className="text-destructive">
                 <Trash2 className="mr-2 size-4" />
                 Delete admin

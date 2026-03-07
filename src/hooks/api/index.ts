@@ -35,3 +35,6 @@ export * from "./use-video-session";
 
 // Auth hooks (existing)
 export * from "./use-login";
+
+// Location (countries / cities)
+export * from "./use-location";

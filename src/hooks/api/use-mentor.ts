@@ -80,10 +80,10 @@ export const useApproveMentor = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"] });
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["notifications"], exact: false });
     },
   });
 };
@@ -102,9 +102,9 @@ export const useRejectMentor = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"] });
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"], exact: false });
     },
   });
 };
@@ -120,8 +120,10 @@ export const useUpdateMentor = () => {
       const response = await apiClient.put<ApiResponse<MentorUser>>(`${BASE}/mentors/${id}`, data);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["mentor", variables.id], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
     },
   });
 };
@@ -138,8 +140,9 @@ export const useCreateMentor = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"], exact: false });
     },
   });
 };
@@ -156,7 +159,9 @@ export const useDeleteMentor = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"], exact: false });
     },
   });
 };

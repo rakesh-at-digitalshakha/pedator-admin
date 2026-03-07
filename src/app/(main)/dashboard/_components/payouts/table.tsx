@@ -1,9 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/data-table/data-table";
-import { usePendingPayouts } from "@/hooks/api/use-payouts";
-import { usePayoutColumns, type PayoutRow } from "./columns";
+import { usePendingPayouts, useApprovePayout, useRejectPayout } from "@/hooks/api/use-payouts";
+import { getPayoutColumns, type PayoutRow } from "./columns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { Badge } from "@/components/ui/badge";
 import { X, Download, DollarSign } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/utils";
 
 export default function PayoutsTable() {
@@ -18,7 +19,12 @@ export default function PayoutsTable() {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [selectedPayout, setSelectedPayout] = useState<PayoutRow | null>(null);
+  const [selectedPayout, setSelectedPayout]   = useState<PayoutRow | null>(null);
+  const [approvingPayout, setApprovingPayout] = useState<PayoutRow | null>(null);
+  const [rejectingPayout, setRejectingPayout] = useState<PayoutRow | null>(null);
+
+  const approveMutation = useApprovePayout();
+  const rejectMutation  = useRejectPayout();
 
   const params = useMemo(
     () => ({ search, status: status ?? "", page, limit }),
@@ -26,7 +32,16 @@ export default function PayoutsTable() {
   );
 
   const { data, isLoading } = usePendingPayouts(params);
-  const columns = usePayoutColumns((payout) => setSelectedPayout(payout));
+
+  const handleView    = useCallback((p: PayoutRow) => setSelectedPayout(p),   []);
+  const handleApprove = useCallback((p: PayoutRow) => setApprovingPayout(p), []);
+  const handleReject  = useCallback((p: PayoutRow) => setRejectingPayout(p), []);
+
+  // useMemo so the columns array reference is stable — prevents infinite re-render in useDataTableInstance
+  const columns = useMemo(
+    () => getPayoutColumns({ onView: handleView, onApprove: handleApprove, onReject: handleReject }),
+    [handleView, handleApprove, handleReject]
+  );
 
   const apiData = data as any;
   const rows: PayoutRow[] = (apiData?.data ?? []).map((p: any) => ({
@@ -218,6 +233,55 @@ export default function PayoutsTable() {
           </div>
         </div>
       </div>
+
+      {/* Approve Confirmation */}
+      <AlertDialog open={!!approvingPayout} onOpenChange={(open) => !open && setApprovingPayout(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve Payout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Approve {formatCurrency(approvingPayout?.amount ?? 0)} payout to{" "}
+              {approvingPayout?.userName || approvingPayout?.userId}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (approvingPayout) approveMutation.mutate(approvingPayout.id);
+                setApprovingPayout(null);
+              }}
+            >
+              Approve
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Confirmation */}
+      <AlertDialog open={!!rejectingPayout} onOpenChange={(open) => !open && setRejectingPayout(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Payout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Reject {formatCurrency(rejectingPayout?.amount ?? 0)} payout request. The user will be notified.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                if (rejectingPayout)
+                  rejectMutation.mutate({ id: rejectingPayout.id, reason: "Insufficient documentation" });
+                setRejectingPayout(null);
+              }}
+            >
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Payout Details Modal */}
       <Dialog open={!!selectedPayout} onOpenChange={(open) => !open && setSelectedPayout(null)}>

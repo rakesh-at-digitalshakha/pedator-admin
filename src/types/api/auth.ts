@@ -2,6 +2,8 @@
  * Authentication related types
  */
 
+import type { AdminUser } from "./admin";
+
 export type LoginRequest = {
   email: string;
   password: string;
@@ -10,18 +12,7 @@ export type LoginRequest = {
 export type LoginResponse = {
   status: string;
   message: string;
-  user: {
-    _id: string;
-    email: string;
-    role: "admin" | "super-admin";
-    status: boolean;
-    realWallet: number;
-    virtualWallet: number;
-    wallet: number;
-    fcmToken?: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  user: AdminUser;
   token: string;
   refreshToken: string;
 };

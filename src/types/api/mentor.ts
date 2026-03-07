@@ -106,11 +106,25 @@ export type CreateMentorRequest = {
   dob?: string;
   description?: string;
   bio?: string;
+  signUpMotivation?: string;
+  commitmentOfTeachingHour?: string;
+  ocupations?: string[];
+  profileImage?: string;
+  livePhoto?: string;
+  introVideo?: string;
   country?: string;
   city?: string;
   address?: string;
   postalCode?: string;
   numberOfExperience?: number;
+  idCardType?: string;
+  idCard?: string;
+  documents?: string[];
+  isEmailVerified?: boolean;
+  isMobileVerified?: boolean;
+  isProfileCompleted?: boolean;
+  isIdCardApproved?: boolean;
+  isFullyVerified?: boolean;
   isProfileApproved?: boolean;
 };
 

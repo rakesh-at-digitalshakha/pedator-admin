@@ -6,9 +6,28 @@ import { isTokenExpired } from "@/lib/auth/token-utils";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:9001/api/v1";
 
-// Flag to prevent multiple simultaneous refresh attempts
-let isRefreshing = false;
-let refreshPromise: Promise<{ token: string; refreshToken: string } | null> | null = null;
+// Single shared refresh promise — prevents duplicate refresh calls
+let ongoingRefresh: Promise<{ token: string; refreshToken: string } | null> | null = null;
+
+function getOngoingRefresh() {
+  if (!ongoingRefresh) {
+    ongoingRefresh = refreshAccessToken().finally(() => {
+      ongoingRefresh = null;
+    });
+  }
+  return ongoingRefresh;
+}
+
+function clearAuthAndRedirect() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("admin_token");
+  localStorage.removeItem("admin_refresh_token");
+  localStorage.removeItem("admin_user");
+  removeAllAuthCookies();
+  const loginUrl = new URL("/auth/login", window.location.origin);
+  loginUrl.searchParams.set("expired", "true");
+  window.location.href = loginUrl.toString();
+}
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
@@ -17,57 +36,29 @@ export const apiClient: AxiosInstance = axios.create({
     "Content-Type": "application/json",
     accept: "application/json",
   },
-  timeout: 30000, // 30 seconds
+  timeout: 30000,
 });
 
-// Request interceptor to add auth token and handle token refresh
+// ── Request interceptor ──────────────────────────────────────────────────────
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage
     let token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
 
     if (token) {
-      // Check if token is expired
       if (isTokenExpired(token, 30)) {
-        // Token is expired, try to refresh
-        console.log("[ApiClient] Token expired, attempting refresh...");
-
-        // Prevent multiple simultaneous refresh attempts
-        if (!isRefreshing) {
-          isRefreshing = true;
-          refreshPromise = refreshAccessToken();
-        }
-
-        try {
-          const result = await refreshPromise;
-          if (result) {
-            token = result.token;
-          } else {
-            // Refresh failed, redirect to login
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("admin_token");
-              localStorage.removeItem("admin_refresh_token");
-              localStorage.removeItem("admin_user");
-              removeAllAuthCookies();
-              const loginUrl = new URL("/auth/login", window.location.origin);
-              loginUrl.searchParams.set("expired", "true");
-              window.location.href = loginUrl.toString();
-            }
-            return Promise.reject(new Error("Token refresh failed"));
-          }
-        } finally {
-          isRefreshing = false;
-          refreshPromise = null;
+        // Token is expired (or within 30-second safety buffer) — refresh before sending
+        console.log("[ApiClient] Token expired, refreshing before request...");
+        const result = await getOngoingRefresh();
+        if (result) {
+          token = result.token;
+        } else {
+          clearAuthAndRedirect();
+          return Promise.reject(new Error("Token refresh failed"));
         }
       } else if (shouldRefreshToken(token)) {
-        // Token is about to expire, refresh in background (don't block the request)
+        // Token expires within 5 minutes — refresh in background, don't block
         console.log("[ApiClient] Token expiring soon, refreshing in background...");
-        if (!isRefreshing) {
-          isRefreshing = true;
-          refreshAccessToken().finally(() => {
-            isRefreshing = false;
-          });
-        }
+        getOngoingRefresh();
       }
 
       config.headers.Authorization = `Bearer ${token}`;
@@ -75,50 +66,30 @@ apiClient.interceptors.request.use(
 
     return config;
   },
-  (error: AxiosError) => {
-    return Promise.reject(error);
-  }
+  (error: AxiosError) => Promise.reject(error),
 );
 
-// Response interceptor to handle errors
+// ── Response interceptor ──────────────────────────────────────────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // On 401, attempt one token refresh then retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Try to refresh the token
-      if (!isRefreshing) {
-        isRefreshing = true;
-        refreshPromise = refreshAccessToken();
+      const result = await getOngoingRefresh();
+      if (result) {
+        originalRequest.headers.Authorization = `Bearer ${result.token}`;
+        return apiClient(originalRequest);
       }
 
-      try {
-        const result = await refreshPromise;
-        if (result) {
-          // Retry the original request with new token
-          originalRequest.headers.Authorization = `Bearer ${result.token}`;
-          return apiClient(originalRequest);
-        }
-      } finally {
-        isRefreshing = false;
-        refreshPromise = null;
-      }
-
-      // Token refresh failed - clear auth data and redirect to login
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_refresh_token");
-        localStorage.removeItem("admin_user");
-        removeAllAuthCookies();
-        const loginUrl = new URL("/auth/login", window.location.origin);
-        loginUrl.searchParams.set("expired", "true");
-        window.location.href = loginUrl.toString();
-      }
+      // Refresh failed — log out and redirect
+      clearAuthAndRedirect();
     }
 
     return Promise.reject(error);
-  }
+  },
 );
+

@@ -15,7 +15,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
-import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
+import { usePermissions } from "@/hooks/use-permissions";
+import { type NavGroup, sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { useAdminStore } from "@/stores/admin/admin-provider";
 
 import { NavMain } from "./nav-main";
@@ -60,12 +61,27 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAdminStore((state) => state);
+  const { canAccess, isSuperAdmin } = usePermissions();
   const [isMounted, setIsMounted] = useState(false);
 
-  // Only render user component after client-side hydration to avoid hydration mismatch
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Filter sidebar groups/items based on user's role permissions
+  const filteredItems: NavGroup[] = sidebarItems
+    .map((group) => ({
+      ...group,
+      items: group.items
+        .filter((item) => isSuperAdmin || canAccess(item.resource))
+        .map((item) => ({
+          ...item,
+          subItems: item.subItems?.filter(
+            (sub) => isSuperAdmin || canAccess(sub.resource),
+          ),
+        })),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <Sidebar {...props}>
@@ -82,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
+        <NavMain items={filteredItems} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

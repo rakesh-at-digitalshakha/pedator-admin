@@ -11,6 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { CloudinaryImageUpload } from "@/components/ui/cloudinary-image-upload";
+import { CloudinaryDocUpload } from "@/components/ui/cloudinary-doc-upload";
 import {
   Dialog,
   DialogContent,
@@ -136,14 +140,34 @@ export function LearnersTable() {
   const handleCreateLearner = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
+
+    const rawDocuments = formData.get("documents") as string;
+    let documentsArr: string[] | undefined;
+    if (rawDocuments) {
+      try { documentsArr = JSON.parse(rawDocuments); } catch { documentsArr = [rawDocuments]; }
+    }
+
     const learnerData: CreateLearnerRequest = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
+      fullName: (formData.get("fullName") as string) || undefined,
+      username: (formData.get("username") as string) || undefined,
       email: formData.get("email") as string,
       mobile: formData.get("mobile") as string,
       password: formData.get("password") as string,
+      dob: (formData.get("dob") as string) || undefined,
+      occupation: (formData.get("occupation") as string) || undefined,
+      description: (formData.get("description") as string) || undefined,
+      aboutUser: (formData.get("aboutUser") as string) || undefined,
+      profileImage: (formData.get("profileImage") as string) || undefined,
+      idCard: (formData.get("idCard") as string) || undefined,
+      documents: documentsArr,
       isBlocked: formData.get("isBlocked") === "true",
       isVerified: formData.get("isVerified") === "true",
+      isEmailVerified: formData.get("isEmailVerified") === "true",
+      isMobileVerified: formData.get("isMobileVerified") === "true",
+      isInitialProfileCompleted: formData.get("isInitialProfileCompleted") === "true",
+      isLandingProfileInfoCompleted: formData.get("isLandingProfileInfoCompleted") === "true",
     };
 
     createLearner(learnerData, {
@@ -163,12 +187,32 @@ export function LearnersTable() {
     if (!editingLearner) return;
 
     const formData = new FormData(e.target as HTMLFormElement);
+
+    const rawDocuments = formData.get("documents") as string;
+    let documentsArr: string[] | undefined;
+    if (rawDocuments) {
+      try { documentsArr = JSON.parse(rawDocuments); } catch { documentsArr = [rawDocuments]; }
+    }
+
     const updateData: Partial<LearnerUser> = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
+      fullName: (formData.get("fullName") as string) || undefined,
+      username: (formData.get("username") as string) || undefined,
       email: formData.get("email") as string,
       mobile: parseInt(formData.get("mobile") as string),
+      dob: (formData.get("dob") as string) || undefined,
+      occupation: (formData.get("occupation") as string) || undefined,
+      description: (formData.get("description") as string) || undefined,
+      aboutUser: (formData.get("aboutUser") as string) || undefined,
+      profileImage: (formData.get("profileImage") as string) || undefined,
+      idCard: (formData.get("idCard") as string) || undefined,
+      documents: documentsArr,
       isBlocked: formData.get("isBlocked") === "true",
+      isEmailVerified: formData.get("isEmailVerified") === "true",
+      isMobileVerified: formData.get("isMobileVerified") === "true",
+      isInitialProfileCompleted: formData.get("isInitialProfileCompleted") === "true",
+      isLandingProfileInfoCompleted: formData.get("isLandingProfileInfoCompleted") === "true",
     };
 
     updateLearner(
@@ -374,53 +418,164 @@ export function LearnersTable() {
               <DialogTitle>Create New Learner</DialogTitle>
               <DialogDescription>Add a new learner to the platform</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="create-firstName">First Name *</Label>
-                  <Input id="create-firstName" name="firstName" required />
+            <div className="grid gap-6 py-4">
+
+              {/* Basic Information */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic Information</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-firstName">First Name *</Label>
+                    <Input id="c-firstName" name="firstName" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-lastName">Last Name *</Label>
+                    <Input id="c-lastName" name="lastName" required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-fullName">Full Name</Label>
+                    <Input id="c-fullName" name="fullName" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-username">Username</Label>
+                    <Input id="c-username" name="username" />
+                  </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="create-lastName">Last Name *</Label>
-                  <Input id="create-lastName" name="lastName" required />
+                  <Label htmlFor="c-email">Email *</Label>
+                  <Input id="c-email" name="email" type="email" required />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-mobile">Mobile Number *</Label>
+                    <Input id="c-mobile" name="mobile" type="tel" required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-password">Password *</Label>
+                    <Input id="c-password" name="password" type="password" required minLength={6} />
+                  </div>
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-email">Email *</Label>
-                <Input id="create-email" name="email" type="email" required />
+
+              {/* Media */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Profile Image</h3>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label>Profile Image</Label>
+                  <CloudinaryImageUpload name="profileImage" folder="learners/profile" />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-mobile">Mobile Number *</Label>
-                <Input id="create-mobile" name="mobile" type="tel" required />
+
+              {/* Personal Details */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Personal Details</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-dob">Date of Birth</Label>
+                    <Input id="c-dob" name="dob" type="date" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="c-occupation">Occupation</Label>
+                    <Input id="c-occupation" name="occupation" placeholder="e.g. Student, Engineer" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="c-description">Description</Label>
+                  <Textarea id="c-description" name="description" rows={2} placeholder="Short description" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="c-aboutUser">About User</Label>
+                  <Textarea id="c-aboutUser" name="aboutUser" rows={3} placeholder="Detailed bio" />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-password">Password *</Label>
-                <Input id="create-password" name="password" type="password" required minLength={6} />
+
+              {/* ID & Documents */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">ID &amp; Documents</h3>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label>ID Card</Label>
+                  <CloudinaryImageUpload name="idCard" folder="learners/id" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Documents</Label>
+                  <CloudinaryDocUpload name="documents" multiple />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-isVerified">Verification Status</Label>
-                <Select name="isVerified" defaultValue="true">
-                  <SelectTrigger id="create-isVerified">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">Verified</SelectItem>
-                    <SelectItem value="false">Unverified</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              {/* Status & Verification */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Status &amp; Verification</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Account Status</Label>
+                    <Select name="isBlocked" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="false">Active</SelectItem>
+                        <SelectItem value="true">Blocked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Verified</Label>
+                    <Select name="isVerified" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Verified</SelectItem>
+                        <SelectItem value="false">Unverified</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Email Verified</Label>
+                    <Select name="isEmailVerified" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Mobile Verified</Label>
+                    <Select name="isMobileVerified" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Initial Profile Completed</Label>
+                    <Select name="isInitialProfileCompleted" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Landing Profile Completed</Label>
+                    <Select name="isLandingProfileInfoCompleted" defaultValue="false">
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-isBlocked">Status</Label>
-                <Select name="isBlocked" defaultValue="false">
-                  <SelectTrigger id="create-isBlocked">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Active</SelectItem>
-                    <SelectItem value="true">Blocked</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -445,52 +600,100 @@ export function LearnersTable() {
         }}
       >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <form onSubmit={handleUpdateLearner}>
+          <form key={editingLearner?._id} onSubmit={handleUpdateLearner}>
             <DialogHeader>
               <DialogTitle>Edit Learner</DialogTitle>
               <DialogDescription>Update learner details</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    defaultValue={editingLearner?.firstName || ""}
-                    required
-                  />
+            <div className="grid gap-6 py-4">
+
+              {/* Basic Information */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic Information</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-firstName">First Name</Label>
+                    <Input id="e-firstName" name="firstName" defaultValue={editingLearner?.firstName || ""} required />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-lastName">Last Name</Label>
+                    <Input id="e-lastName" name="lastName" defaultValue={editingLearner?.lastName || ""} required />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-fullName">Full Name</Label>
+                    <Input id="e-fullName" name="fullName" defaultValue={editingLearner?.fullName || ""} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-username">Username</Label>
+                    <Input id="e-username" name="username" defaultValue={editingLearner?.username || ""} />
+                  </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    defaultValue={editingLearner?.lastName || ""}
-                    required
-                  />
+                  <Label htmlFor="e-email">Email</Label>
+                  <Input id="e-email" name="email" type="email" defaultValue={editingLearner?.email || ""} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="e-mobile">Mobile Number</Label>
+                  <Input id="e-mobile" name="mobile" type="tel" defaultValue={editingLearner?.mobile?.toString() || ""} required />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  defaultValue={editingLearner?.email || ""}
-                  required
-                />
+
+              {/* Media */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Profile Image</h3>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label>Profile Image</Label>
+                  <CloudinaryImageUpload name="profileImage" folder="learners/profile" defaultValue={editingLearner?.profileImage} />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="mobile">Mobile Number</Label>
-                <Input
-                  id="mobile"
-                  name="mobile"
-                  type="tel"
-                  defaultValue={editingLearner?.mobile?.toString() || ""}
-                  required
-                />
+
+              {/* Personal Details */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Personal Details</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-dob">Date of Birth</Label>
+                    <Input id="e-dob" name="dob" type="date" defaultValue={editingLearner?.dob ? editingLearner.dob.slice(0, 10) : ""} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="e-occupation">Occupation</Label>
+                    <Input id="e-occupation" name="occupation" defaultValue={editingLearner?.occupation || ""} placeholder="e.g. Student, Engineer" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="e-description">Description</Label>
+                  <Textarea id="e-description" name="description" rows={2} defaultValue={editingLearner?.description || ""} placeholder="Short description" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="e-aboutUser">About User</Label>
+                  <Textarea id="e-aboutUser" name="aboutUser" rows={3} defaultValue={editingLearner?.aboutUser || ""} placeholder="Detailed bio" />
+                </div>
               </div>
+
+              {/* Wallet (read-only) */}
+              {(editingLearner?.realWallet !== undefined || editingLearner?.virtualWallet !== undefined) && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wallet</h3>
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Real Wallet</Label>
+                      <Input value={editingLearner?.realWallet ?? 0} readOnly className="bg-muted" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Virtual Wallet</Label>
+                      <Input value={editingLearner?.virtualWallet ?? 0} readOnly className="bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Enrolled Courses warning */}
               {editingLearner?.enrolledCourses && editingLearner.enrolledCourses.length > 0 && (
                 <Alert>
                   <AlertCircle className="size-4" />
@@ -499,18 +702,83 @@ export function LearnersTable() {
                   </AlertDescription>
                 </Alert>
               )}
-              <div className="grid gap-2">
-                <Label htmlFor="isBlocked">Status</Label>
-                <Select name="isBlocked" defaultValue={editingLearner?.isBlocked ? "true" : "false"}>
-                  <SelectTrigger id="isBlocked">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Active</SelectItem>
-                    <SelectItem value="true">Blocked</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              {/* ID & Documents */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">ID &amp; Documents</h3>
+                <Separator />
+                <div className="grid gap-2">
+                  <Label>ID Card</Label>
+                  <CloudinaryImageUpload name="idCard" folder="learners/id" defaultValue={editingLearner?.idCard} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Documents</Label>
+                  <CloudinaryDocUpload
+                    name="documents"
+                    multiple
+                    defaultValue={editingLearner?.documents}
+                  />
+                </div>
               </div>
+
+              {/* Status & Verification */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Status &amp; Verification</h3>
+                <Separator />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Account Status</Label>
+                    <Select name="isBlocked" defaultValue={editingLearner?.isBlocked ? "true" : "false"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="false">Active</SelectItem>
+                        <SelectItem value="true">Blocked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Email Verified</Label>
+                    <Select name="isEmailVerified" defaultValue={editingLearner?.isEmailVerified ? "true" : "false"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Mobile Verified</Label>
+                    <Select name="isMobileVerified" defaultValue={editingLearner?.isMobileVerified ? "true" : "false"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Initial Profile Completed</Label>
+                    <Select name="isInitialProfileCompleted" defaultValue={editingLearner?.isInitialProfileCompleted ? "true" : "false"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Landing Profile Completed</Label>
+                    <Select name="isLandingProfileInfoCompleted" defaultValue={editingLearner?.isLandingProfileInfoCompleted ? "true" : "false"}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>

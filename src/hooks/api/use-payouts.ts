@@ -38,7 +38,9 @@ export function usePendingPayouts(params?: Record<string, string | number | bool
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<any>>(`${BASE}/payouts/pending${qs}`);
       return response.data;
-    }
+    },
+    staleTime: 30_000,
+    retry: 1,
   });
 }
 

@@ -1,9 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/data-table/data-table";
-import { useFlaggedContent } from "@/hooks/api/use-moderation";
-import { useModerationColumns, type FlaggedContent } from "./columns";
+import { useFlaggedContent, useSuspendUser, useBanUser, useUnbanUser } from "@/hooks/api/use-moderation";
+import { getModerationColumns, type FlaggedContent } from "./columns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function ModerationTable() {
@@ -19,8 +20,14 @@ export default function ModerationTable() {
   const [severity, setSeverity] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [reviewingContent, setReviewingContent] = useState<FlaggedContent | null>(null);
-  const [reviewNotes, setReviewNotes] = useState("");
+  const [reviewingContent, setReviewingContent]   = useState<FlaggedContent | null>(null);
+  const [reviewNotes, setReviewNotes]               = useState("");
+  const [suspendingContent, setSuspendingContent]  = useState<FlaggedContent | null>(null);
+  const [banningContent, setBanningContent]         = useState<FlaggedContent | null>(null);
+
+  const suspendMutation = useSuspendUser();
+  const banMutation     = useBanUser();
+  const unbanMutation   = useUnbanUser();
 
   const params = useMemo(
     () => ({ search, status: status ?? "", severity: severity ?? "", page, limit }),
@@ -28,7 +35,17 @@ export default function ModerationTable() {
   );
 
   const { data, isLoading } = useFlaggedContent(params);
-  const columns = useModerationColumns((content) => setReviewingContent(content));
+
+  const handleReview  = useCallback((c: FlaggedContent) => setReviewingContent(c),  []);
+  const handleSuspend = useCallback((c: FlaggedContent) => setSuspendingContent(c), []);
+  const handleBan     = useCallback((c: FlaggedContent) => setBanningContent(c),    []);
+  const handleUnban   = useCallback((c: FlaggedContent) => unbanMutation.mutate({ id: c.userId }), [unbanMutation]);
+
+  // Stable column reference — prevents infinite re-renders
+  const columns = useMemo(
+    () => getModerationColumns({ onReview: handleReview, onSuspend: handleSuspend, onBan: handleBan, onUnban: handleUnban }),
+    [handleReview, handleSuspend, handleBan, handleUnban]
+  );
 
   const apiData = data as any;
   const rows: FlaggedContent[] = (apiData?.data ?? []).map((c: any) => ({
@@ -192,6 +209,57 @@ export default function ModerationTable() {
           </div>
         </div>
       </div>
+
+      {/* Suspend User Confirmation */}
+      <AlertDialog open={!!suspendingContent} onOpenChange={(open) => !open && setSuspendingContent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend User?</AlertDialogTitle>
+            <AlertDialogDescription>
+              User <strong>{suspendingContent?.userId}</strong> will be suspended. They can still access their account
+              but will not be able to perform actions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (suspendingContent)
+                  suspendMutation.mutate({ id: suspendingContent.userId, reason: suspendingContent.reason });
+                setSuspendingContent(null);
+              }}
+            >
+              Suspend
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ban User Confirmation */}
+      <AlertDialog open={!!banningContent} onOpenChange={(open) => !open && setBanningContent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban User?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently ban user <strong>{banningContent?.userId}</strong>. They won’t be able to
+              access their account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                if (banningContent)
+                  banMutation.mutate({ id: banningContent.userId, reason: banningContent.reason });
+                setBanningContent(null);
+              }}
+            >
+              Ban User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Review Content Modal */}
       <Dialog open={!!reviewingContent} onOpenChange={(open) => !open && (setReviewingContent(null), setReviewNotes(""))}>

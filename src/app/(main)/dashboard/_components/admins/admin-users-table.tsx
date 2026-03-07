@@ -22,8 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
-import { useGetAllAdmins, useCreateAdmin, useUpdateAdmin, useResetAdminPassword } from "@/hooks/api";
-import type { AdminFilters, AdminUser, UpdateAdminRequest } from "@/types/api";
+import { useGetAllAdmins, useGetAllRoles, useCreateAdmin, useUpdateAdmin, useResetAdminPassword } from "@/hooks/api";
+import type { AdminFilters, AdminUser, CreateAdminRequest, UpdateAdminRequest } from "@/types/api";
 
 import { adminUsersColumns } from "./admin-users-columns";
 
@@ -38,20 +38,27 @@ export function AdminUsersTable() {
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editingAdmin, setEditingAdmin] = React.useState<AdminUser | null>(null);
   const [searchValue, setSearchValue] = React.useState("");
-  const [createFormData, setCreateFormData] = React.useState({
+  const [createFormData, setCreateFormData] = React.useState<CreateAdminRequest>({
     email: "",
     password: "",
-    role: "admin" as "admin" | "super-admin",
+    role: "",   // roleId — set once roles are loaded
+    name: "",
+    phoneNumber: "",
+    designation: "",
   });
   const [editFormData, setEditFormData] = React.useState<UpdateAdminRequest>({
-    email: "",
-    role: "admin",
+    role: "",
+    name: "",
+    phoneNumber: "",
+    designation: "",
   });
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = React.useState(false);
   const [adminToReset, setAdminToReset] = React.useState<AdminUser | null>(null);
   const [newPassword, setNewPassword] = React.useState("");
 
   const { data: adminsData, isLoading, error } = useGetAllAdmins(filters);
+  const { data: rolesData } = useGetAllRoles();
+  const roles = (rolesData as any)?.data ?? [];
   const { mutate: createAdmin, isPending: isCreating } = useCreateAdmin();
   const { mutate: updateAdmin, isPending: isUpdating } = useUpdateAdmin();
   const { mutate: resetAdminPassword, isPending: isResetting } = useResetAdminPassword();
@@ -96,8 +103,10 @@ export function AdminUsersTable() {
   React.useEffect(() => {
     if (editingAdmin) {
       setEditFormData({
-        email: editingAdmin.email,
-        role: editingAdmin.role,
+        role: editingAdmin.role?._id ?? "",
+        name: editingAdmin.name ?? "",
+        phoneNumber: editingAdmin.phoneNumber ?? "",
+        designation: editingAdmin.designation ?? "",
       });
     }
   }, [editingAdmin]);
@@ -162,7 +171,7 @@ export function AdminUsersTable() {
           toast.success("Admin updated successfully");
           setIsEditDialogOpen(false);
           setEditingAdmin(null);
-          setEditFormData({ email: "", role: "admin" });
+          setEditFormData({ role: "", name: "", phoneNumber: "", designation: "" });
           // Query invalidation will automatically refetch
         },
         onError: (error: any) => {
@@ -175,7 +184,7 @@ export function AdminUsersTable() {
   const handleRoleFilterChange = (value: string) => {
     setFilters((prev) => ({
       ...prev,
-      role: value === "all" ? undefined : (value as "admin" | "super-admin"),
+      role: value === "all" ? undefined : value,
       page: 1,
     }));
   };
@@ -240,17 +249,50 @@ export function AdminUsersTable() {
                     />
                   </div>
                   <div className="grid gap-2">
+                    <Label htmlFor="create-name">Full Name</Label>
+                    <Input
+                      id="create-name"
+                      type="text"
+                      placeholder="e.g. John Doe"
+                      value={createFormData.name}
+                      onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="create-phone">Contact Number</Label>
+                    <Input
+                      id="create-phone"
+                      type="tel"
+                      placeholder="e.g. +919876543210"
+                      value={createFormData.phoneNumber}
+                      onChange={(e) => setCreateFormData({ ...createFormData, phoneNumber: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="create-designation">Designation</Label>
+                    <Input
+                      id="create-designation"
+                      type="text"
+                      placeholder="e.g. Operations Manager"
+                      value={createFormData.designation}
+                      onChange={(e) => setCreateFormData({ ...createFormData, designation: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="create-role">Role</Label>
                     <Select
                       value={createFormData.role}
                       onValueChange={(value: any) => setCreateFormData({ ...createFormData, role: value })}
                     >
                       <SelectTrigger id="create-role">
-                        <SelectValue />
+                        <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="super-admin">Super Admin</SelectItem>
+                        {roles.map((r: any) => (
+                          <SelectItem key={r._id} value={r._id}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -284,8 +326,11 @@ export function AdminUsersTable() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="super-admin">Super Admin</SelectItem>
+                {roles.map((r: any) => (
+                  <SelectItem key={r._id} value={r.name}>
+                    {r.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <div className="ml-auto">
@@ -398,7 +443,7 @@ export function AdminUsersTable() {
           if (!open) {
             // Reset form when dialog closes
             setEditingAdmin(null);
-            setEditFormData({ email: "", role: "admin" });
+            setEditFormData({ role: "", name: "", phoneNumber: "", designation: "" });
           }
         }}
       >
@@ -414,23 +459,56 @@ export function AdminUsersTable() {
                 <Input
                   id="edit-email"
                   type="email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                  required
+                  value={editingAdmin?.email ?? ""}
+                  disabled
+                  className="cursor-not-allowed opacity-60"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-name">Full Name</Label>
+                <Input
+                  id="edit-name"
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={editFormData.name ?? ""}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-phone">Contact Number</Label>
+                <Input
+                  id="edit-phone"
+                  type="tel"
+                  placeholder="e.g. +919876543210"
+                  value={editFormData.phoneNumber ?? ""}
+                  onChange={(e) => setEditFormData({ ...editFormData, phoneNumber: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-designation">Designation</Label>
+                <Input
+                  id="edit-designation"
+                  type="text"
+                  placeholder="e.g. Operations Manager"
+                  value={editFormData.designation ?? ""}
+                  onChange={(e) => setEditFormData({ ...editFormData, designation: e.target.value })}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-role">Role</Label>
                 <Select
-                  value={editFormData.role}
+                  value={editFormData.role ?? ""}
                   onValueChange={(value: any) => setEditFormData({ ...editFormData, role: value })}
                 >
                   <SelectTrigger id="edit-role">
-                    <SelectValue />
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super-admin">Super Admin</SelectItem>
+                    {roles.map((r: any) => (
+                      <SelectItem key={r._id} value={r._id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

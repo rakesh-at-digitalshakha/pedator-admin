@@ -3,11 +3,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { useSuspendUser, useBanUser, useUnbanUser } from "@/hooks/api/use-moderation";
 import { formatDistanceToNow } from "date-fns";
-import { useState } from "react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Shield, AlertTriangle, Ban, Clock, CheckCircle } from "lucide-react";
+import { Shield, AlertTriangle, Ban, Clock, CheckCircle, MoreHorizontal } from "lucide-react";
 
 export type FlaggedContent = {
   id: string;
@@ -36,13 +33,15 @@ const STATUS_CONFIG = {
   rejected: { color: "destructive", label: "Rejected", icon: Ban },
 };
 
-export function useModerationColumns(onReview?: (content: FlaggedContent) => void): ColumnDef<FlaggedContent, any>[] {
-  const suspendMutation = useSuspendUser();
-  const banMutation = useBanUser();
-  const unbanMutation = useUnbanUser();
-  const [suspendId, setSuspendId] = useState<string | null>(null);
-  const [banId, setBanId] = useState<string | null>(null);
+export interface ModerationColumnCallbacks {
+  onReview:  (content: FlaggedContent) => void;
+  onSuspend: (content: FlaggedContent) => void;
+  onBan:     (content: FlaggedContent) => void;
+  onUnban:   (content: FlaggedContent) => void;
+}
 
+/** Pure column definitions — no hooks, no dialogs. All mutations live in the table component. */
+export function getModerationColumns(callbacks: ModerationColumnCallbacks): ColumnDef<FlaggedContent, any>[] {
   return [
     {
       accessorKey: "title",
@@ -104,79 +103,35 @@ export function useModerationColumns(onReview?: (content: FlaggedContent) => voi
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost">
-                ⋮
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onReview?.(row.original)}>
-                <Shield className="w-4 h-4 mr-2" />
-                Review Content
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setSuspendId(row.original.userId)}>
-                <Clock className="w-4 h-4 mr-2" />
-                Suspend User
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setBanId(row.original.userId)} className="text-destructive">
-                <Ban className="w-4 h-4 mr-2" />
-                Ban User
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => unbanMutation.mutate({ id: row.original.userId })}>
-                Unban User
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <AlertDialog open={suspendId === row.original.userId} onOpenChange={(open) => !open && setSuspendId(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Suspend User?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  User {row.original.userId} will be suspended. They can still access their account but won't be able to perform actions.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="flex gap-2 justify-end">
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    suspendMutation.mutate({ id: row.original.userId, reason: row.original.reason });
-                    setSuspendId(null);
-                  }}
-                >
-                  Suspend
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <AlertDialog open={banId === row.original.userId} onOpenChange={(open) => !open && setBanId(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Ban User?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently ban user {row.original.userId}. They won't be able to access their account.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="flex gap-2 justify-end">
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => {
-                    banMutation.mutate({ id: row.original.userId, reason: row.original.reason });
-                    setBanId(null);
-                  }}
-                >
-                  Ban User
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="ghost">
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => callbacks.onReview(row.original)}>
+              <Shield className="w-4 h-4 mr-2" />
+              Review Content
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => callbacks.onSuspend(row.original)}>
+              <Clock className="w-4 h-4 mr-2" />
+              Suspend User
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => callbacks.onBan(row.original)}
+              className="text-destructive"
+            >
+              <Ban className="w-4 h-4 mr-2" />
+              Ban User
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => callbacks.onUnban(row.original)}>
+              Unban User
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];

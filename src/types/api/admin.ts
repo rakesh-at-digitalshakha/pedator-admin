@@ -4,17 +4,34 @@
 
 import type { PaginationParams } from "./common";
 
+export type Permission = {
+  resource: string;
+  actions: ("create" | "read" | "update" | "delete" | "download")[];
+};
+
+export type Role = {
+  _id: string;
+  name: string;
+  description?: string;
+  permissions: Permission[];
+  isSystem: boolean;
+  isDeleted?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminUser = {
   _id: string;
   name?: string;
   email: string;
   phoneNumber?: string;
+  designation?: string;
   profilePicture?: string;
-  role: "admin" | "super-admin";
+  role: Role;           // populated role document
   status: boolean;
-  wallet: number;
-  realWallet: number;
-  virtualWallet: number;
+  wallet?: number;       // not present on admin model — optional
+  realWallet?: number;
+  virtualWallet?: number;
   fcmToken?: string;
   isDeleted?: boolean;
   createdAt: string;
@@ -24,16 +41,29 @@ export type AdminUser = {
 export type CreateAdminRequest = {
   email: string;
   password: string;
-  role: "admin" | "super-admin";
+  role: string;         // roleId (ObjectId string)
+  name?: string;
+  phoneNumber?: string;
+  designation?: string;
 };
 
 export type UpdateAdminRequest = {
-  email?: string;
-  role?: "admin" | "super-admin";
+  role?: string;        // roleId (ObjectId string)
+  name?: string;
+  phoneNumber?: string;
+  designation?: string;
 };
 
+export type CreateRoleRequest = {
+  name: string;
+  description?: string;
+  permissions: Permission[];
+};
+
+export type UpdateRoleRequest = Partial<CreateRoleRequest>;
+
 export type AdminFilters = PaginationParams & {
-  role?: "admin" | "super-admin";
+  role?: string;
   search?: string;
   sortBy?: string;
   order?: "asc" | "desc";

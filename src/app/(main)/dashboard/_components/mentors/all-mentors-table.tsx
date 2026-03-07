@@ -6,12 +6,6 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { DataTable } from "@/components/data-table/data-table";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+import { CloudinaryImageUpload } from "@/components/ui/cloudinary-image-upload";
+import { CloudinaryVideoUpload } from "@/components/ui/cloudinary-video-upload";
+import { CloudinaryDocUpload } from "@/components/ui/cloudinary-doc-upload";
 import {
   useGetAllMentors,
   useCreateMentor,
@@ -29,6 +31,8 @@ import {
   useDeleteMentor,
   useApproveMentor,
   useRejectMentor,
+  useGetCountries,
+  useGetCities,
 } from "@/hooks/api";
 import type { CreateMentorRequest, MentorFilters, MentorUser } from "@/types/api";
 import { allMentorsColumns } from "./all-mentors-columns";
@@ -44,6 +48,17 @@ export function AllMentorsTable() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
   const [editingMentor, setEditingMentor] = React.useState<MentorUser | null>(null);
   const [searchValue, setSearchValue] = React.useState("");
+  const [selectedCreateCountryId, setSelectedCreateCountryId] = React.useState<string>("");
+  const [selectedEditCountryId, setSelectedEditCountryId] = React.useState<string>("");
+
+  const { data: countries = [], isLoading: countriesLoading } = useGetCountries();
+  const { data: createCities = [] } = useGetCities(selectedCreateCountryId || undefined);
+  const { data: editCities = [] } = useGetCities(selectedEditCountryId || undefined);
+
+  // Sync edit-form country when a mentor is loaded for editing
+  React.useEffect(() => {
+    setSelectedEditCountryId(editingMentor?.country ?? "");
+  }, [editingMentor?._id]);
 
   const { data: mentorsData, isLoading, error } = useGetAllMentors(filters);
   const { mutate: createMentor, isPending: isCreating } = useCreateMentor();
@@ -185,14 +200,38 @@ export function AllMentorsTable() {
   const handleCreateMentor = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
+    const ocupationsRaw = (formData.get("ocupations") as string) || "";
     const mentorData: CreateMentorRequest = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
+      displayName: (formData.get("displayName") as string) || undefined,
       email: formData.get("email") as string,
       mobile: parseInt(formData.get("mobile") as string),
       password: formData.get("password") as string,
-      phoneNumber: formData.get("phoneNumber") as string || undefined,
-      bio: formData.get("bio") as string || undefined,
+      dob: (formData.get("dob") as string) || undefined,
+      description: (formData.get("description") as string) || undefined,
+      bio: (formData.get("bio") as string) || undefined,
+      signUpMotivation: (formData.get("signUpMotivation") as string) || undefined,
+      commitmentOfTeachingHour: (formData.get("commitmentOfTeachingHour") as string) || undefined,
+      ocupations: ocupationsRaw ? ocupationsRaw.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+      profileImage: (formData.get("profileImage") as string) || undefined,
+      livePhoto: (formData.get("livePhoto") as string) || undefined,
+      introVideo: (formData.get("introVideo") as string) || undefined,
+      documents: (() => { try { return JSON.parse((formData.get("documents") as string) || "[]") as string[]; } catch { return []; } })(),
+      country: selectedCreateCountryId || undefined,
+      city: (formData.get("city") as string) || undefined,
+      address: (formData.get("address") as string) || undefined,
+      postalCode: (formData.get("postalCode") as string) || undefined,
+      numberOfExperience: formData.get("numberOfExperience")
+        ? parseInt(formData.get("numberOfExperience") as string)
+        : undefined,
+      idCardType: (formData.get("idCardType") as string) || undefined,
+      idCard: (formData.get("idCard") as string) || undefined,
+      isEmailVerified: formData.get("isEmailVerified") === "true",
+      isMobileVerified: formData.get("isMobileVerified") === "true",
+      isProfileCompleted: formData.get("isProfileCompleted") === "true",
+      isIdCardApproved: formData.get("isIdCardApproved") === "true",
+      isFullyVerified: formData.get("isFullyVerified") === "true",
       isProfileApproved: formData.get("isProfileApproved") === "true",
     };
 
@@ -214,12 +253,39 @@ export function AllMentorsTable() {
     if (!editingMentor) return;
 
     const formData = new FormData(e.target as HTMLFormElement);
+    const ocupationsRaw = (formData.get("ocupations") as string) || "";
     const updateData: Partial<MentorUser> = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
+      displayName: (formData.get("displayName") as string) || undefined,
+      username: (formData.get("username") as string) || undefined,
       email: formData.get("email") as string,
-      phoneNumber: formData.get("phoneNumber") as string,
-      bio: formData.get("bio") as string,
+      mobile: formData.get("mobile") ? parseInt(formData.get("mobile") as string) : undefined,
+      phoneNumber: (formData.get("phoneNumber") as string) || undefined,
+      dob: (formData.get("dob") as string) || undefined,
+      description: (formData.get("description") as string) || undefined,
+      bio: (formData.get("bio") as string) || undefined,
+      signUpMotivation: (formData.get("signUpMotivation") as string) || undefined,
+      commitmentOfTeachingHour: (formData.get("commitmentOfTeachingHour") as string) || undefined,
+      ocupations: ocupationsRaw ? ocupationsRaw.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+      profileImage: (formData.get("profileImage") as string) || undefined,
+      livePhoto: (formData.get("livePhoto") as string) || undefined,
+      introVideo: (formData.get("introVideo") as string) || undefined,
+      country: selectedEditCountryId || undefined,
+      city: (formData.get("city") as string) || undefined,
+      address: (formData.get("address") as string) || undefined,
+      postalCode: formData.get("postalCode") ? parseInt(formData.get("postalCode") as string) : undefined,
+      documents: (() => { try { return JSON.parse((formData.get("documents") as string) || "[]") as string[]; } catch { return []; } })(),
+      numberOfExperience: formData.get("numberOfExperience")
+        ? parseInt(formData.get("numberOfExperience") as string)
+        : undefined,
+      idCardType: (formData.get("idCardType") as string) || undefined,
+      idCard: (formData.get("idCard") as string) || undefined,
+      isEmailVerified: formData.get("isEmailVerified") === "true",
+      isMobileVerified: formData.get("isMobileVerified") === "true",
+      isProfileCompleted: formData.get("isProfileCompleted") === "true",
+      isIdCardApproved: formData.get("isIdCardApproved") === "true",
+      isFullyVerified: formData.get("isFullyVerified") === "true",
       isBlocked: formData.get("isBlocked") === "true",
     };
 
@@ -410,59 +476,233 @@ export function AllMentorsTable() {
           setIsCreateDialogOpen(open);
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleCreateMentor}>
             <DialogHeader>
               <DialogTitle>Create New Mentor</DialogTitle>
               <DialogDescription>Add a new mentor to the platform</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/* Basic Info */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Basic Information</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="create-firstName">First Name *</Label>
-                  <Input id="create-firstName" name="firstName" required />
+                  <Input id="create-firstName" name="firstName" placeholder="John" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="create-lastName">Last Name *</Label>
-                  <Input id="create-lastName" name="lastName" required />
+                  <Input id="create-lastName" name="lastName" placeholder="Doe" required />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="create-email">Email *</Label>
-                <Input id="create-email" name="email" type="email" required />
+                <Label htmlFor="create-displayName">Display Name</Label>
+                <Input id="create-displayName" name="displayName" placeholder="Optional public name" />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="create-mobile">Mobile Number *</Label>
-                <Input id="create-mobile" name="mobile" type="tel" required />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-email">Email *</Label>
+                  <Input id="create-email" name="email" type="email" placeholder="john@example.com" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-mobile">Mobile Number *</Label>
+                  <Input id="create-mobile" name="mobile" type="tel" placeholder="+1234567890" required />
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="create-password">Password *</Label>
                 <Input id="create-password" name="password" type="password" required minLength={6} />
               </div>
+
+              {/* Media */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Media</p>
               <div className="grid gap-2">
-                <Label htmlFor="create-phoneNumber">Phone Number (Optional)</Label>
-                <Input id="create-phoneNumber" name="phoneNumber" type="tel" />
+                <Label>Profile Image</Label>
+                <CloudinaryImageUpload name="profileImage" folder="pedator/mentors/profile" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Live Photo</Label>
+                  <CloudinaryImageUpload name="livePhoto" folder="pedator/mentors/live" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Intro Video</Label>
+                  <CloudinaryVideoUpload name="introVideo" folder="pedator/mentors/videos" />
+                </div>
+              </div>
+
+              {/* Personal Details */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Personal Details</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-dob">Date of Birth</Label>
+                  <Input id="create-dob" name="dob" type="date" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-numberOfExperience">Years of Experience</Label>
+                  <Input id="create-numberOfExperience" name="numberOfExperience" type="number" min={0} max={50} placeholder="0" />
+                </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="create-bio">Bio (Optional)</Label>
-                <textarea
-                  id="create-bio"
-                  name="bio"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  rows={4}
-                />
+                <Label htmlFor="create-description">Short Description</Label>
+                <Textarea id="create-description" name="description" placeholder="Brief description shown in listings..." rows={2} />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="create-isProfileApproved">Approval Status</Label>
-                <Select name="isProfileApproved" defaultValue="true">
-                  <SelectTrigger id="create-isProfileApproved">
-                    <SelectValue />
+                <Label htmlFor="create-bio">Bio</Label>
+                <Textarea id="create-bio" name="bio" placeholder="Full mentor bio..." rows={3} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-signUpMotivation">Sign Up Motivation</Label>
+                <Textarea id="create-signUpMotivation" name="signUpMotivation" placeholder="Why do you want to teach?" rows={2} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-commitmentOfTeachingHour">Teaching Hours / Week</Label>
+                  <Input id="create-commitmentOfTeachingHour" name="commitmentOfTeachingHour" placeholder="e.g. 10" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-ocupations">Occupations</Label>
+                  <Input id="create-ocupations" name="ocupations" placeholder="Engineer, Writer (comma-separated)" />
+                </div>
+              </div>
+
+              {/* Location */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Location</p>
+              <div className="grid gap-2">
+                <Label htmlFor="create-country">Country</Label>
+                <Select
+                  value={selectedCreateCountryId}
+                  onValueChange={(val) => { setSelectedCreateCountryId(val); }}
+                  disabled={countriesLoading}
+                >
+                  <SelectTrigger id="create-country">
+                    <SelectValue placeholder={countriesLoading ? "Loading..." : "Select country"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="true">Approved</SelectItem>
-                    <SelectItem value="false">Pending</SelectItem>
+                    {countries.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-city">City</Label>
+                  <Select name="city" disabled={!selectedCreateCountryId || createCities.length === 0}>
+                    <SelectTrigger id="create-city">
+                      <SelectValue placeholder={!selectedCreateCountryId ? "Select country first" : "Select city"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {createCities.map((c) => (
+                        <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-postalCode">Postal Code</Label>
+                  <Input id="create-postalCode" name="postalCode" placeholder="e.g. 10001" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-address">Address</Label>
+                <Input id="create-address" name="address" placeholder="Street address" />
+              </div>
+
+              {/* ID Verification */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">ID Verification</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-idCardType">ID Card Type</Label>
+                  <Select name="idCardType" defaultValue="">
+                    <SelectTrigger id="create-idCardType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                      <SelectItem value="Pan Card">Pan Card</SelectItem>
+                      <SelectItem value="Driving License">Driving License</SelectItem>
+                      <SelectItem value="Passport">Passport</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>ID Card Image</Label>
+                  <CloudinaryImageUpload name="idCard" folder="pedator/mentors/id-cards" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Documents</Label>
+                <CloudinaryDocUpload name="documents" multiple folder="pedator/mentors/documents" />
+              </div>
+
+              {/* Status */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Status &amp; Verification</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isProfileApproved">Profile Approval</Label>
+                  <Select name="isProfileApproved" defaultValue="false">
+                    <SelectTrigger id="create-isProfileApproved"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Approved</SelectItem>
+                      <SelectItem value="false">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isEmailVerified">Email Verified</Label>
+                  <Select name="isEmailVerified" defaultValue="false">
+                    <SelectTrigger id="create-isEmailVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isMobileVerified">Mobile Verified</Label>
+                  <Select name="isMobileVerified" defaultValue="false">
+                    <SelectTrigger id="create-isMobileVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isIdCardApproved">ID Card Approved</Label>
+                  <Select name="isIdCardApproved" defaultValue="false">
+                    <SelectTrigger id="create-isIdCardApproved"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isProfileCompleted">Profile Completed</Label>
+                  <Select name="isProfileCompleted" defaultValue="false">
+                    <SelectTrigger id="create-isProfileCompleted"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-isFullyVerified">Fully Verified</Label>
+                  <Select name="isFullyVerified" defaultValue="false">
+                    <SelectTrigger id="create-isFullyVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <DialogFooter>
@@ -487,79 +727,285 @@ export function AllMentorsTable() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <form onSubmit={handleUpdateMentor}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <form key={editingMentor?._id} onSubmit={handleUpdateMentor}>
             <DialogHeader>
               <DialogTitle>Edit Mentor</DialogTitle>
               <DialogDescription>Update mentor details</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/* Basic Info */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Basic Information</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="edit-firstName">First Name</Label>
+                  <Input id="edit-firstName" name="firstName" defaultValue={editingMentor?.firstName ?? ""} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-lastName">Last Name</Label>
+                  <Input id="edit-lastName" name="lastName" defaultValue={editingMentor?.lastName ?? ""} required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-displayName">Display Name</Label>
+                  <Input id="edit-displayName" name="displayName" defaultValue={editingMentor?.displayName ?? ""} placeholder="Optional public name" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-username">Username</Label>
+                  <Input id="edit-username" name="username" defaultValue={editingMentor?.username ?? ""} placeholder="@username" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input id="edit-email" name="email" type="email" defaultValue={editingMentor?.email ?? ""} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-mobile">Mobile Number</Label>
+                  <Input id="edit-mobile" name="mobile" type="tel" defaultValue={editingMentor?.mobile?.toString() ?? ""} />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-phoneNumber">Phone Number</Label>
+                <Input id="edit-phoneNumber" name="phoneNumber" type="tel" defaultValue={editingMentor?.phoneNumber ?? ""} />
+              </div>
+
+              {/* Media */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Media</p>
+              <div className="grid gap-2">
+                <Label>Profile Image</Label>
+                <CloudinaryImageUpload name="profileImage" folder="pedator/mentors/profile" defaultValue={editingMentor?.profileImage ?? ""} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Live Photo</Label>
+                  <CloudinaryImageUpload name="livePhoto" folder="pedator/mentors/live" defaultValue={editingMentor?.livePhoto ?? ""} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Intro Video</Label>
+                  <CloudinaryVideoUpload name="introVideo" folder="pedator/mentors/videos" defaultValue={editingMentor?.introVideo ?? ""} />
+                </div>
+              </div>
+
+              {/* Personal Details */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Personal Details</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-dob">Date of Birth</Label>
                   <Input
-                    id="firstName"
-                    name="firstName"
-                    defaultValue={editingMentor?.firstName || ""}
-                    required
+                    id="edit-dob"
+                    name="dob"
+                    type="date"
+                    defaultValue={editingMentor?.dob ? editingMentor.dob.substring(0, 10) : ""}
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="edit-numberOfExperience">Years of Experience</Label>
                   <Input
-                    id="lastName"
-                    name="lastName"
-                    defaultValue={editingMentor?.lastName || ""}
-                    required
+                    id="edit-numberOfExperience"
+                    name="numberOfExperience"
+                    type="number"
+                    min={0}
+                    max={50}
+                    defaultValue={editingMentor?.numberOfExperience?.toString() ?? ""}
+                    placeholder="0"
                   />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  defaultValue={editingMentor?.email || ""}
-                  required
+                <Label htmlFor="edit-description">Short Description</Label>
+                <Textarea
+                  id="edit-description"
+                  name="description"
+                  defaultValue={editingMentor?.description ?? ""}
+                  placeholder="Brief description shown in listings..."
+                  rows={2}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  type="tel"
-                  defaultValue={editingMentor?.phoneNumber || editingMentor?.mobile?.toString() || ""}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="bio">Bio</Label>
-                <textarea
-                  id="bio"
+                <Label htmlFor="edit-bio">Bio</Label>
+                <Textarea
+                  id="edit-bio"
                   name="bio"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  defaultValue={editingMentor?.bio || ""}
-                  rows={4}
+                  defaultValue={editingMentor?.bio ?? ""}
+                  placeholder="Full mentor bio..."
+                  rows={3}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="isBlocked">Status</Label>
-                <Select name="isBlocked" defaultValue={editingMentor?.isBlocked ? "true" : "false"}>
-                  <SelectTrigger id="isBlocked">
-                    <SelectValue />
+                <Label htmlFor="edit-signUpMotivation">Sign Up Motivation</Label>
+                <Textarea
+                  id="edit-signUpMotivation"
+                  name="signUpMotivation"
+                  defaultValue={editingMentor?.signUpMotivation ?? ""}
+                  placeholder="Why do you want to teach?"
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-commitmentOfTeachingHour">Teaching Hours / Week</Label>
+                  <Input
+                    id="edit-commitmentOfTeachingHour"
+                    name="commitmentOfTeachingHour"
+                    defaultValue={editingMentor?.commitmentOfTeachingHour ?? ""}
+                    placeholder="e.g. 10"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-ocupations">Occupations</Label>
+                  <Input
+                    id="edit-ocupations"
+                    name="ocupations"
+                    defaultValue={editingMentor?.ocupations?.join(", ") ?? ""}
+                    placeholder="Engineer, Writer (comma-separated)"
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Location</p>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-country">Country</Label>
+                <Select
+                  value={selectedEditCountryId}
+                  onValueChange={(val) => setSelectedEditCountryId(val)}
+                  disabled={countriesLoading}
+                >
+                  <SelectTrigger id="edit-country">
+                    <SelectValue placeholder={countriesLoading ? "Loading..." : "Select country"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="false">Active</SelectItem>
-                    <SelectItem value="true">Blocked</SelectItem>
+                    {countries.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-city">City</Label>
+                  <Select name="city" defaultValue={editingMentor?.city ?? ""} disabled={!selectedEditCountryId || editCities.length === 0}>
+                    <SelectTrigger id="edit-city">
+                      <SelectValue placeholder={!selectedEditCountryId ? "Select country first" : "Select city"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {editCities.map((c) => (
+                        <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-postalCode">Postal Code</Label>
+                  <Input id="edit-postalCode" name="postalCode" defaultValue={editingMentor?.postalCode?.toString() ?? ""} placeholder="e.g. 10001" />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-address">Address</Label>
+                <Input id="edit-address" name="address" defaultValue={editingMentor?.address ?? ""} placeholder="Street address" />
+              </div>
+
+              {/* ID Verification */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">ID Verification</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-idCardType">ID Card Type</Label>
+                  <Select name="idCardType" defaultValue={editingMentor?.idCardType ?? ""}>
+                    <SelectTrigger id="edit-idCardType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Aadhaar Card">Aadhaar Card</SelectItem>
+                      <SelectItem value="Pan Card">Pan Card</SelectItem>
+                      <SelectItem value="Driving License">Driving License</SelectItem>
+                      <SelectItem value="Passport">Passport</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>ID Card Image</Label>
+                  <CloudinaryImageUpload name="idCard" folder="pedator/mentors/id-cards" defaultValue={editingMentor?.idCard ?? ""} />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Documents</Label>
+                <CloudinaryDocUpload name="documents" multiple folder="pedator/mentors/documents" defaultValue={editingMentor?.documents ?? []} />
+              </div>
+
+              {/* Status & Verification */}
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-2">Status &amp; Verification</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isBlocked">Account Status</Label>
+                  <Select name="isBlocked" defaultValue={editingMentor?.isBlocked ? "true" : "false"}>
+                    <SelectTrigger id="edit-isBlocked"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Active</SelectItem>
+                      <SelectItem value="true">Blocked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isEmailVerified">Email Verified</Label>
+                  <Select name="isEmailVerified" defaultValue={editingMentor?.isEmailVerified ? "true" : "false"}>
+                    <SelectTrigger id="edit-isEmailVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isMobileVerified">Mobile Verified</Label>
+                  <Select name="isMobileVerified" defaultValue={editingMentor?.isMobileVerified ? "true" : "false"}>
+                    <SelectTrigger id="edit-isMobileVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isIdCardApproved">ID Card Approved</Label>
+                  <Select name="isIdCardApproved" defaultValue={editingMentor?.isIdCardApproved ? "true" : "false"}>
+                    <SelectTrigger id="edit-isIdCardApproved"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isProfileCompleted">Profile Completed</Label>
+                  <Select name="isProfileCompleted" defaultValue={editingMentor?.isProfileCompleted ? "true" : "false"}>
+                    <SelectTrigger id="edit-isProfileCompleted"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-isFullyVerified">Fully Verified</Label>
+                  <Select name="isFullyVerified" defaultValue={editingMentor?.isFullyVerified ? "true" : "false"}>
+                    <SelectTrigger id="edit-isFullyVerified"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               {editingMentor?.isProfileRejected && editingMentor?.rejectionReason && (
                 <div className="grid gap-2">
-                  <Label htmlFor="rejectionReason">Rejection Reason</Label>
+                  <Label>Rejection Reason (read-only)</Label>
                   <Textarea
-                    id="rejectionReason"
                     readOnly
                     value={editingMentor.rejectionReason}
                     className="bg-muted"

@@ -15,6 +15,8 @@ export function useFlaggedContent(params?: Record<string, string | number | bool
       const response = await apiClient.get<ApiResponse<any>>(`${BASE}/moderation/flagged${qs}`);
       return response.data;
     },
+    staleTime: 30_000,
+    retry: 1,
   });
 }
 

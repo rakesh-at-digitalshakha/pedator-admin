@@ -3,12 +3,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { useApprovePayout, useRejectPayout } from "@/hooks/api/use-payouts";
 import { formatDistanceToNow } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { useState } from "react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { CheckCircle, XCircle, Clock, DollarSign, User, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, DollarSign, User, Eye, MoreHorizontal } from "lucide-react";
 
 export type PayoutRow = {
   id: string;
@@ -31,12 +28,14 @@ const STATUS_CONFIG = {
   completed: { color: "default", label: "Completed", icon: CheckCircle },
 };
 
-export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDef<PayoutRow, any>[] {
-  const approveMutation = useApprovePayout();
-  const rejectMutation = useRejectPayout();
-  const [approveId, setApproveId] = useState<string | null>(null);
-  const [rejectId, setRejectId] = useState<string | null>(null);
+export interface PayoutColumnCallbacks {
+  onView:    (payout: PayoutRow) => void;
+  onApprove: (payout: PayoutRow) => void;
+  onReject:  (payout: PayoutRow) => void;
+}
 
+/** Pure column definitions — no hooks, no dialogs. All mutations live in the table component. */
+export function getPayoutColumns(callbacks: PayoutColumnCallbacks): ColumnDef<PayoutRow, any>[] {
   return [
     {
       accessorKey: "reference",
@@ -50,13 +49,13 @@ export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDe
     },
     {
       id: "user",
-      header: "Mentee/Teacher",
+      header: "Mentor / User",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-muted-foreground" />
+          <User className="w-4 h-4 text-muted-foreground shrink-0" />
           <div>
-            <div className="font-medium">{row.original.userName || row.original.userId}</div>
-            <div className="text-xs text-muted-foreground">{row.original.userId}</div>
+            <div className="font-medium">{row.original.userName || "—"}</div>
+            <div className="text-xs text-muted-foreground font-mono">{row.original.userId.slice(-8)}</div>
           </div>
         </div>
       ),
@@ -108,79 +107,35 @@ export function usePayoutColumns(onView?: (payout: PayoutRow) => void): ColumnDe
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="ghost">
-                ⋮
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView?.(row.original)}>
-                <Eye className="w-4 h-4 mr-2" />
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {row.original.status === "pending" && (
-                <>
-                  <DropdownMenuItem onClick={() => setApproveId(row.original.id)}>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setRejectId(row.original.id)} className="text-destructive">
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Reject
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <AlertDialog open={approveId === row.original.id} onOpenChange={(open) => !open && setApproveId(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Approve Payout?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Approve {formatCurrency(row.original.amount)} payout to {row.original.userName || row.original.userId}.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    approveMutation.mutate(row.original.id);
-                    setApproveId(null);
-                  }}
-                >
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="ghost">
+              <MoreHorizontal className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => callbacks.onView(row.original)}>
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            {row.original.status === "pending" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => callbacks.onApprove(row.original)}>
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Approve
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <AlertDialog open={rejectId === row.original.id} onOpenChange={(open) => !open && setRejectId(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reject Payout?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Reject {formatCurrency(row.original.amount)} payout request. User will be notified.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => {
-                    rejectMutation.mutate({ id: row.original.id, reason: "Insufficient documentation" });
-                    setRejectId(null);
-                  }}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => callbacks.onReject(row.original)}
+                  className="text-destructive"
                 >
+                  <XCircle className="w-4 h-4 mr-2" />
                   Reject
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];

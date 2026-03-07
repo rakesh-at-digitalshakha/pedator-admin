@@ -13,9 +13,12 @@ import type {
   AdminUser,
   ApiResponse,
   CreateAdminRequest,
+  CreateRoleRequest,
   Notification,
   PaginationParams,
+  Role,
   UpdateAdminRequest,
+  UpdateRoleRequest,
 } from "@/types/api";
 
 /**
@@ -65,7 +68,7 @@ export const useCreateAdmin = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admins"] });
+      queryClient.invalidateQueries({ queryKey: ["admins"], exact: false });
     },
   });
 };
@@ -82,8 +85,8 @@ export const useUpdateAdmin = () => {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["admins"] });
-      queryClient.invalidateQueries({ queryKey: ["admin", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["admins"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admin", variables.id], exact: false });
     },
   });
 };
@@ -100,7 +103,7 @@ export const useDeleteAdmin = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admins"] });
+      queryClient.invalidateQueries({ queryKey: ["admins"], exact: false });
     },
   });
 };
@@ -215,5 +218,83 @@ export const useChangePassword = () => {
       const response = await apiClient.post<ApiResponse<void>>("/admin/change-password", data);
       return response.data;
     },
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROLE MANAGEMENT HOOKS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Get all roles */
+export const useGetAllRoles = () => {
+  return useQuery({
+    queryKey: ["roles"],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<Role[]> & { total: number; meta: { validResources: string[]; validActions: string[] } }>("/admin/roles");
+      return response.data;
+    },
+  });
+};
+
+/** Get role meta (valid resources + actions) */
+export const useGetRoleMeta = () => {
+  return useQuery({
+    queryKey: ["roles-meta"],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<{ resources: string[]; actions: string[] }>>("/admin/roles/meta");
+      return response.data;
+    },
+  });
+};
+
+/** Get role by ID */
+export const useGetRoleById = (id: string) => {
+  return useQuery({
+    queryKey: ["role", id],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<Role>>(`/admin/roles/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
+};
+
+/** Create role */
+export const useCreateRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ApiResponse<Role>, AxiosError, CreateRoleRequest>({
+    mutationFn: async (data) => {
+      const response = await apiClient.post<ApiResponse<Role>>("/admin/roles", data);
+      return response.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["roles"], exact: false }),
+  });
+};
+
+/** Update role */
+export const useUpdateRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ApiResponse<Role>, AxiosError, { id: string; data: UpdateRoleRequest }>({
+    mutationFn: async ({ id, data }) => {
+      const response = await apiClient.put<ApiResponse<Role>>(`/admin/roles/${id}`, data);
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["roles"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["role", variables.id], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["admins"], exact: false });
+    },
+  });
+};
+
+/** Delete role */
+export const useDeleteRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ApiResponse<void>, AxiosError, string>({
+    mutationFn: async (id) => {
+      const response = await apiClient.delete<ApiResponse<void>>(`/admin/roles/${id}`);
+      return response.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["roles"], exact: false }),
   });
 };

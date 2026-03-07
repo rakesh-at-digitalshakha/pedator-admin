@@ -1,11 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
+
 import { DataTable } from "@/components/data-table/data-table";
-import { useDisputes } from "@/hooks/api/use-disputes";
-import { useDisputeColumns, type Dispute } from "./columns";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDisputes } from "@/hooks/api/use-disputes";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
+
+import { useDisputeColumns, type Dispute } from "./columns";
 
 export default function DisputesTable() {
   const [search, setSearch] = useState("");

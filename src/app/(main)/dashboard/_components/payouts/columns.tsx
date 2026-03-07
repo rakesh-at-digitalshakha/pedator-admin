@@ -55,7 +55,7 @@ export function getPayoutColumns(callbacks: PayoutColumnCallbacks): ColumnDef<Pa
           <User className="w-4 h-4 text-muted-foreground shrink-0" />
           <div>
             <div className="font-medium">{row.original.userName || "—"}</div>
-            <div className="text-xs text-muted-foreground font-mono">{row.original.userId.slice(-8)}</div>
+            <div className="text-xs text-muted-foreground font-mono">{row.original.userId ? String(row.original.userId).slice(-8) : "—"}</div>
           </div>
         </div>
       ),

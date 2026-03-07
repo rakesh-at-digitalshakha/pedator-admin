@@ -205,3 +205,15 @@ export const useResetAdminPassword = () => {
     },
   });
 };
+
+/**
+ * Change own password (Any admin)
+ */
+export const useChangePassword = () => {
+  return useMutation<ApiResponse<void>, AxiosError, { currentPassword: string; newPassword: string }>({
+    mutationFn: async (data) => {
+      const response = await apiClient.post<ApiResponse<void>>("/admin/change-password", data);
+      return response.data;
+    },
+  });
+};

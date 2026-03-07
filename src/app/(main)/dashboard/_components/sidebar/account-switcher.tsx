@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { BadgeCheck, Bell, CreditCard, LogOut, Wallet } from "lucide-react";
+import { BadgeCheck, Bell, CreditCard, LogOut, Wallet, Key } from "lucide-react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,15 +16,17 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { cn, getInitials, formatCurrency } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { useAdminStore } from "@/stores/admin/admin-provider";
 import { useAuthStore } from "@/stores/auth/auth-provider";
+import { ChangePasswordDialog } from "../admins/change-password-dialog";
 
 export function AccountSwitcher() {
   const router = useRouter();
   const { user } = useAdminStore((state) => state);
   const logout = useAuthStore((state) => state.logout);
   const [mounted, setMounted] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -69,11 +71,15 @@ export function AccountSwitcher() {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/dashboard/wallet")}>
             <Wallet />
-            Wallet ({formatCurrency(user.wallet || 0, { noDecimals: true })})
+            Wallet
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/dashboard/notifications")}>
             <Bell />
             Notifications
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setIsPasswordDialogOpen(true)}>
+            <Key />
+            Change Password
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -82,6 +88,11 @@ export function AccountSwitcher() {
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      
+      <ChangePasswordDialog 
+        open={isPasswordDialogOpen} 
+        onOpenChange={setIsPasswordDialogOpen} 
+      />
     </DropdownMenu>
   );
 }

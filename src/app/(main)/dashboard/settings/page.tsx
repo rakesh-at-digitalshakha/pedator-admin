@@ -1,16 +1,20 @@
 "use client";
+import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import { Key } from "lucide-react";
 import { usePlatformSettings, usePaymentGatewaySettings, useMaintenanceMode } from "@/hooks/api/use-settings";
+import { ChangePasswordDialog } from "../_components/admins/change-password-dialog";
 
 export default function SettingsPage() {
   const { query: settings, update: updateSettings } = usePlatformSettings();
   const { query: payment, update: updatePayment } = usePaymentGatewaySettings();
   const maintenance = useMaintenanceMode();
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
 
   const form = useForm<{ name: string; primaryColor: string }>();
   const paymentForm = useForm<{ provider: string }>();
@@ -97,6 +101,31 @@ export default function SettingsPage() {
           </Form>
         </CardContent>
       </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Security Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium mb-2">Password</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                Change your password to keep your account secure
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsPasswordDialogOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <Key className="mr-2 size-4" />
+                Change Password
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle>Maintenance Mode</CardTitle>
@@ -110,6 +139,11 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      
+      <ChangePasswordDialog 
+        open={isPasswordDialogOpen} 
+        onOpenChange={setIsPasswordDialogOpen} 
+      />
     </div>
   );
 }

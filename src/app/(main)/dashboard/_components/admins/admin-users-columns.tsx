@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDeleteAdmin } from "@/hooks/api";
-import { formatCurrency } from "@/lib/utils";
 import type { AdminUser } from "@/types/api";
 
 type AdminUsersColumnsProps = {
@@ -54,33 +53,6 @@ export const adminUsersColumns = ({
     cell: ({ row }) => {
       const status = row.getValue<boolean>("status");
       return <Badge variant={status ? "default" : "outline"}>{status ? "Active" : "Inactive"}</Badge>;
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "wallet",
-    header: "Wallet Balance",
-    cell: ({ row }) => {
-      const wallet = row.getValue<number>("wallet");
-      return <div className="font-semibold tabular-nums">{formatCurrency(wallet)}</div>;
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "realWallet",
-    header: "Real Wallet",
-    cell: ({ row }) => {
-      const realWallet = row.getValue<number>("realWallet");
-      return <div className="tabular-nums">{formatCurrency(realWallet)}</div>;
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "virtualWallet",
-    header: "Virtual Wallet",
-    cell: ({ row }) => {
-      const virtualWallet = row.getValue<number>("virtualWallet");
-      return <div className="tabular-nums">{formatCurrency(virtualWallet)}</div>;
     },
     enableSorting: false,
   },

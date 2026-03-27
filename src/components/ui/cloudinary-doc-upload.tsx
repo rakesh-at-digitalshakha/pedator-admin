@@ -13,6 +13,8 @@ interface CloudinaryDocUploadProps {
   /** When true, allows selecting multiple files and stores a JSON array */
   multiple?: boolean;
   defaultValue?: string | string[];
+  value?: string | string[];
+  onChange?: (value: string | string[]) => void;
   folder?: string;
   label?: string;
   disabled?: boolean;
@@ -33,6 +35,8 @@ export function CloudinaryDocUpload({
   name,
   multiple = false,
   defaultValue,
+  value,
+  onChange,
   folder = "pedator/documents",
   disabled = false,
   className,
@@ -48,15 +52,29 @@ export function CloudinaryDocUpload({
     return [v];
   };
 
-  const [urls, setUrls] = React.useState<string[]>(() => normalise(defaultValue));
+  const isControlled = value !== undefined;
+  const [internalUrls, setInternalUrls] = React.useState<string[]>(() => normalise(defaultValue));
   const [uploading, setUploading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const urls = isControlled ? normalise(value) : internalUrls;
+
+  const updateUrls = (nextUrls: string[]) => {
+    if (!isControlled) {
+      setInternalUrls(nextUrls);
+    }
+    if (onChange) {
+      onChange(multiple ? nextUrls : (nextUrls[0] ?? ""));
+    }
+  };
+
   React.useEffect(() => {
-    setUrls(normalise(defaultValue));
+    if (!isControlled) {
+      setInternalUrls(normalise(defaultValue));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(defaultValue)]);
+  }, [JSON.stringify(defaultValue), isControlled]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -89,9 +107,9 @@ export function CloudinaryDocUpload({
       }
 
       if (multiple) {
-        setUrls((prev) => [...prev, ...uploaded]);
+        updateUrls([...urls, ...uploaded]);
       } else {
-        setUrls(uploaded.slice(0, 1));
+        updateUrls(uploaded.slice(0, 1));
       }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Upload failed.");
@@ -102,7 +120,7 @@ export function CloudinaryDocUpload({
   };
 
   const removeUrl = (idx: number) => {
-    setUrls((prev) => prev.filter((_, i) => i !== idx));
+    updateUrls(urls.filter((_, i) => i !== idx));
   };
 
   // Determine hidden input value format

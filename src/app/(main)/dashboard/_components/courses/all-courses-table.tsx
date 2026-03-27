@@ -229,9 +229,20 @@ export function AllCoursesTable() {
         subCategoryId: values.subCategoryId,
         moduleId: values.moduleId,
         lessonId: values.lessonId,
+        duration: typeof values.duration === "string" ? parseFloat(values.duration) : values.duration,
         mentorId: values.mentorId,
         price: typeof values.price === "string" ? parseFloat(values.price) : values.price,
         status: values.status,
+        coverImage: values.coverImage,
+        video: values.video,
+        keyTopics: values.keyTopics,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        tags: values.tags,
+        keypointsOfCourse: values.keypointsOfCourse,
+        images: values.images,
+        documents: values.documents,
+        faqs: values.faqs,
       };
 
       updateCourse(
@@ -265,9 +276,20 @@ export function AllCoursesTable() {
         subCategoryId: values.subCategoryId,
         moduleId: values.moduleId,
         lessonId: values.lessonId,
+        duration: Number(values.duration),
         mentorId: values.mentorId,
         price: Number(values.price),
         status: values.status ?? true,
+        coverImage: values.coverImage,
+        video: values.video,
+        keyTopics: values.keyTopics,
+        startDate: values.startDate,
+        endDate: values.endDate,
+        tags: values.tags,
+        keypointsOfCourse: values.keypointsOfCourse,
+        images: values.images,
+        documents: values.documents,
+        faqs: values.faqs,
       };
 
       createCourse(courseData, {
@@ -504,9 +526,20 @@ export function AllCoursesTable() {
               subCategoryId: "",
               moduleId: "",
               lessonId: "",
+              duration: 60,
               price: "",
               status: true,
               mentorId: "",
+              coverImage: "",
+              video: "",
+              keyTopics: "",
+              startDate: "",
+              endDate: "",
+              tags: [],
+              keypointsOfCourse: [],
+              images: [],
+              documents: [],
+              faqs: [],
             }}
             categories={categoriesData?.data ?? []}
             subCategories={(subCategoriesData?.data ?? []).map((s: any) => ({
@@ -549,9 +582,23 @@ export function AllCoursesTable() {
                 subCategoryId: editingCourse.subCategoryId?._id || "",
                 moduleId: editingCourse.moduleId?._id || "",
                 lessonId: editingCourse.lessonId?._id || "",
+                duration: editingCourse.duration,
                 price: editingCourse.price,
                 status: editingCourse.status,
                 mentorId: editingCourse.mentorId?._id || "",
+                coverImage: editingCourse.coverImage || "",
+                video: editingCourse.video || "",
+                keyTopics:
+                  typeof editingCourse.keyTopics === "string"
+                    ? editingCourse.keyTopics
+                    : editingCourse.keyTopics?._id || "",
+                startDate: editingCourse.startDate ? editingCourse.startDate.slice(0, 10) : "",
+                endDate: editingCourse.endDate ? editingCourse.endDate.slice(0, 10) : "",
+                tags: editingCourse.tags || [],
+                keypointsOfCourse: editingCourse.keypointsOfCourse || [],
+                images: editingCourse.images || [],
+                documents: editingCourse.documents || [],
+                faqs: editingCourse.faqs || [],
               }}
               categories={categoriesData?.data || []}
               subCategories={(subCategoriesData?.data || []).map((s: any) => ({

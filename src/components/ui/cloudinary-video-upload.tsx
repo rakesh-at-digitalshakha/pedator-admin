@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 interface CloudinaryVideoUploadProps {
   name: string;
   defaultValue?: string;
+  value?: string;
+  onChange?: (url: string) => void;
   folder?: string;
   label?: string;
   disabled?: boolean;
@@ -19,20 +21,34 @@ interface CloudinaryVideoUploadProps {
 export function CloudinaryVideoUpload({
   name,
   defaultValue = "",
+  value,
+  onChange,
   folder = "pedator/videos",
   label,
   disabled = false,
   className,
 }: CloudinaryVideoUploadProps) {
-  const [url, setUrl] = React.useState(defaultValue);
+  const isControlled = value !== undefined;
+  const [internalUrl, setInternalUrl] = React.useState(defaultValue);
   const [uploading, setUploading] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const url = isControlled ? value ?? "" : internalUrl;
+
+  const updateUrl = (nextUrl: string) => {
+    if (!isControlled) {
+      setInternalUrl(nextUrl);
+    }
+    onChange?.(nextUrl);
+  };
+
   React.useEffect(() => {
-    setUrl(defaultValue ?? "");
-  }, [defaultValue]);
+    if (!isControlled) {
+      setInternalUrl(defaultValue ?? "");
+    }
+  }, [defaultValue, isControlled]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,7 +84,7 @@ export function CloudinaryVideoUpload({
       );
 
       if (res.data.success) {
-        setUrl(res.data.data.url);
+        updateUrl(res.data.data.url);
       } else {
         setError("Upload failed.");
       }
@@ -82,7 +98,7 @@ export function CloudinaryVideoUpload({
   };
 
   const handleRemove = () => {
-    setUrl("");
+    updateUrl("");
     setError(null);
   };
 

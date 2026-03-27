@@ -207,8 +207,22 @@ export const courseColumns: ColumnDef<Course>[] = [
                   subCategoryId: course.subCategoryId?._id,
                   moduleId: course.moduleId?._id,
                   lessonId: course.lessonId?._id,
+                  duration: course.duration,
                   price: course.price,
                   status: course.status,
+                  coverImage: course.coverImage,
+                  video: course.video,
+                  keyTopics:
+                    typeof course.keyTopics === "string"
+                      ? course.keyTopics
+                      : course.keyTopics?._id,
+                  startDate: course.startDate ? course.startDate.slice(0, 10) : "",
+                  endDate: course.endDate ? course.endDate.slice(0, 10) : "",
+                  tags: course.tags || [],
+                  keypointsOfCourse: course.keypointsOfCourse || [],
+                  images: course.images || [],
+                  documents: course.documents || [],
+                  faqs: course.faqs || [],
                 }}
                 categories={categoriesData?.data || []}
                 subCategories={(subCategoriesData?.data || []).map((s: any) => ({
@@ -239,6 +253,17 @@ export const courseColumns: ColumnDef<Course>[] = [
                       subCategoryId: values.subCategoryId,
                       moduleId: values.moduleId,
                       lessonId: values.lessonId,
+                      duration: Number(values.duration),
+                      coverImage: values.coverImage,
+                      video: values.video,
+                      keyTopics: values.keyTopics,
+                      startDate: values.startDate,
+                      endDate: values.endDate,
+                      tags: values.tags,
+                      keypointsOfCourse: values.keypointsOfCourse,
+                      images: values.images,
+                      documents: values.documents,
+                      faqs: values.faqs,
                     };
                     await updateMutation.mutateAsync({ id: course._id, data: payload });
                     toast.success("Course updated successfully");

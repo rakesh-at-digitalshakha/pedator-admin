@@ -12,6 +12,10 @@ interface CloudinaryImageUploadProps {
   name: string;
   /** Existing URL (edit mode pre-fill) */
   defaultValue?: string;
+  /** Controlled value for React form state */
+  value?: string;
+  /** Called whenever uploaded URL changes */
+  onChange?: (url: string) => void;
   /** Cloudinary sub-folder, default: pedator/images */
   folder?: string;
   label?: string;
@@ -22,20 +26,34 @@ interface CloudinaryImageUploadProps {
 export function CloudinaryImageUpload({
   name,
   defaultValue = "",
+  value,
+  onChange,
   folder = "pedator/images",
   label,
   disabled = false,
   className,
 }: CloudinaryImageUploadProps) {
-  const [url, setUrl] = React.useState(defaultValue);
+  const isControlled = value !== undefined;
+  const [internalUrl, setInternalUrl] = React.useState(defaultValue);
   const [uploading, setUploading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const url = isControlled ? value ?? "" : internalUrl;
+
+  const updateUrl = (nextUrl: string) => {
+    if (!isControlled) {
+      setInternalUrl(nextUrl);
+    }
+    onChange?.(nextUrl);
+  };
+
   // Sync if defaultValue changes (e.g. dialog key re-mount)
   React.useEffect(() => {
-    setUrl(defaultValue ?? "");
-  }, [defaultValue]);
+    if (!isControlled) {
+      setInternalUrl(defaultValue ?? "");
+    }
+  }, [defaultValue, isControlled]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,7 +83,7 @@ export function CloudinaryImageUpload({
       );
 
       if (res.data.success) {
-        setUrl(res.data.data.url);
+        updateUrl(res.data.data.url);
       } else {
         setError("Upload failed.");
       }
@@ -79,7 +97,7 @@ export function CloudinaryImageUpload({
   };
 
   const handleRemove = () => {
-    setUrl("");
+    updateUrl("");
     setError(null);
   };
 

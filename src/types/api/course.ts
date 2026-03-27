@@ -30,7 +30,7 @@ export type Course = {
     name: string;
   };
   price: number;
-  duration: string;
+  duration: number;
   isCourseApproved: boolean;
   isCourseRejected: boolean;
   rejectionReason?: string;
@@ -41,6 +41,10 @@ export type Course = {
   images?: string[];
   video?: string;
   documents?: string[];
+  tags?: string[];
+  keyTopics?: string | { _id: string; name: string };
+  startDate?: string;
+  endDate?: string;
   faqs?: Array<{
     question: string;
     answer: string;
@@ -72,9 +76,20 @@ export type CreateCourseRequest = {
   subCategoryId?: string;
   moduleId?: string;
   lessonId?: string;
+  duration: number;
   mentorId: string;
   price: number;
   status?: boolean;
+  coverImage?: string;
+  video?: string;
+  images?: string[];
+  documents?: string[];
+  faqs?: Array<{ question: string; answer: string }>;
+  tags?: string[];
+  keypointsOfCourse?: string[];
+  keyTopics?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export type UpdateCourseRequest = {
@@ -84,7 +99,18 @@ export type UpdateCourseRequest = {
   subCategoryId?: string;
   moduleId?: string;
   lessonId?: string;
+  duration?: number;
   mentorId?: string;
   price?: number;
   status?: boolean;
+  coverImage?: string;
+  video?: string;
+  images?: string[];
+  documents?: string[];
+  faqs?: Array<{ question: string; answer: string }>;
+  tags?: string[];
+  keypointsOfCourse?: string[];
+  keyTopics?: string;
+  startDate?: string;
+  endDate?: string;
 };

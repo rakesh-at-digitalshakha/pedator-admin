@@ -380,6 +380,8 @@ export function CourseForm({
             !values.description.trim() ||
             !values.categoryId ||
             !values.subCategoryId ||
+            !values.moduleId ||
+            !values.lessonId ||
             !values.duration ||
             !values.price ||
             (showMentorField && !values.mentorId)

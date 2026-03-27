@@ -73,9 +73,9 @@ export type CreateCourseRequest = {
   title: string;
   description: string;
   categoryId: string;
-  subCategoryId?: string;
-  moduleId?: string;
-  lessonId?: string;
+  subCategoryId: string;
+  moduleId: string;
+  lessonId: string;
   duration: number;
   mentorId: string;
   price: number;

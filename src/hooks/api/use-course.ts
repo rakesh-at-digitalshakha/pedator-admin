@@ -8,6 +8,44 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
 import type { ApiResponse, Course, CourseFilters, CreateCourseRequest, UpdateCourseRequest } from "@/types/api";
 
+type CourseListPayload = {
+  data: Course[];
+  total: number;
+  page: number;
+  pages: number;
+  count: number;
+};
+
+const normalizeCourseListResponse = (
+  payload: ApiResponse<CourseListPayload | Course[]>
+): ApiResponse<CourseListPayload> => {
+  const maybeNested = payload.data as CourseListPayload | undefined;
+  if (maybeNested && !Array.isArray(maybeNested) && Array.isArray(maybeNested.data)) {
+    return {
+      ...payload,
+      data: {
+        data: maybeNested.data,
+        total: maybeNested.total ?? payload.total ?? maybeNested.data.length,
+        page: maybeNested.page ?? payload.page ?? 1,
+        pages: maybeNested.pages ?? payload.pages ?? 1,
+        count: maybeNested.count ?? payload.count ?? maybeNested.data.length,
+      },
+    };
+  }
+
+  const flatData = (Array.isArray(payload.data) ? payload.data : []) as Course[];
+  return {
+    ...payload,
+    data: {
+      data: flatData,
+      total: payload.total ?? flatData.length,
+      page: payload.page ?? 1,
+      pages: payload.pages ?? 1,
+      count: payload.count ?? flatData.length,
+    },
+  };
+};
+
 /**
  * Get all courses with filters (Admin)
  */
@@ -30,8 +68,8 @@ export const useGetAllCourses = (filters?: CourseFilters) => {
       if (filters?.minPrice) params.append("minPrice", filters.minPrice.toString());
       if (filters?.maxPrice) params.append("maxPrice", filters.maxPrice.toString());
 
-      const response = await apiClient.get<ApiResponse<{ data: Course[]; total: number; page: number; pages: number; count: number }>>(`/admin/courses?${params.toString()}`);
-      return response.data;
+      const response = await apiClient.get<ApiResponse<CourseListPayload | Course[]>>(`/admin/courses?${params.toString()}`);
+      return normalizeCourseListResponse(response.data);
     },
   });
 };
@@ -136,8 +174,8 @@ export const useGetPendingCourses = (filters?: CourseFilters) => {
       if (filters?.order) params.append("order", filters.order);
       params.append("status", "pending");
 
-      const response = await apiClient.get<ApiResponse<{ data: Course[]; total: number; page: number; pages: number; count: number }>>(`/admin/courses?${params.toString()}`);
-      return response.data;
+      const response = await apiClient.get<ApiResponse<CourseListPayload | Course[]>>(`/admin/courses?${params.toString()}`);
+      return normalizeCourseListResponse(response.data);
     },
   });
 };

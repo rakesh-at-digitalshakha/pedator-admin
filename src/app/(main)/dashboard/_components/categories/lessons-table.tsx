@@ -48,9 +48,6 @@ export function LessonsTable() {
     moduleId: "",
     name: "",
     description: "",
-    contentType: "video",
-    contentUrl: "",
-    duration: 0,
     order: 0,
     status: true,
   });
@@ -73,9 +70,6 @@ export function LessonsTable() {
         moduleId: "",
         name: "",
         description: "",
-        contentType: "video",
-        contentUrl: "",
-        duration: 0,
         order: 0,
         status: true,
       });
@@ -106,9 +100,6 @@ export function LessonsTable() {
       moduleId: lesson.moduleId,
       name: lesson.name,
       description: lesson.description || "",
-      contentType: lesson.contentType || "video",
-      contentUrl: lesson.contentUrl || "",
-      duration: lesson.duration ?? 0,
       order: lesson.order ?? 0,
       status: lesson.status ?? true,
     });
@@ -135,9 +126,6 @@ export function LessonsTable() {
                   moduleId: "",
                   name: "",
                   description: "",
-                  contentType: "video",
-                  contentUrl: "",
-                  duration: 0,
                   order: 0,
                   status: true,
                 });
@@ -166,8 +154,6 @@ export function LessonsTable() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Parent Module</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Duration</TableHead>
                     <TableHead>Order</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Usage</TableHead>
@@ -188,8 +174,6 @@ export function LessonsTable() {
                         <TableCell>
                           <Badge variant="outline">{parentModule?.name || lesson.moduleName || "-"}</Badge>
                         </TableCell>
-                        <TableCell className="capitalize">{lesson.contentType || "video"}</TableCell>
-                        <TableCell>{lesson.duration ? `${lesson.duration} min` : "-"}</TableCell>
                         <TableCell>{lesson.order ?? 0}</TableCell>
                         <TableCell>
                           <Badge variant={lesson.status ? "default" : "secondary"}>

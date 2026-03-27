@@ -28,7 +28,6 @@ export type Course = {
   lessonId?: {
     _id: string;
     name: string;
-    contentType?: "video" | "text" | "quiz" | "assignment" | "other";
   };
   price: number;
   duration: string;

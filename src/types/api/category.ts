@@ -44,9 +44,6 @@ export type CourseLesson = {
   moduleName?: string | null;
   name: string;
   description?: string;
-  contentType?: "video" | "text" | "quiz" | "assignment" | "other";
-  contentUrl?: string;
-  duration?: number;
   status: boolean;
   order?: number;
   createdAt: string;
@@ -83,9 +80,6 @@ export type CreateCourseLessonRequest = {
   moduleId: string;
   name: string;
   description?: string;
-  contentType?: "video" | "text" | "quiz" | "assignment" | "other";
-  contentUrl?: string;
-  duration?: number;
   status?: boolean;
   order?: number;
 };

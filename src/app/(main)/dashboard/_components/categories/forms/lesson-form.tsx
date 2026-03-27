@@ -5,17 +5,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 export type LessonFormValues = {
   moduleId: string;
   name: string;
   description?: string;
-  contentType?: "video" | "text" | "quiz" | "assignment" | "other";
-  contentUrl?: string;
-  duration?: number;
   order?: number;
   status?: boolean;
 };
@@ -74,49 +71,6 @@ export function LessonForm({
           onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
           placeholder="Enter lesson description"
           rows={3}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="lesson-content-type">Content Type</Label>
-          <Select
-            value={values.contentType || "video"}
-            onValueChange={(value: LessonFormValues["contentType"]) => setValues((v) => ({ ...v, contentType: value }))}
-          >
-            <SelectTrigger id="lesson-content-type">
-              <SelectValue placeholder="Select content type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="video">Video</SelectItem>
-              <SelectItem value="text">Text</SelectItem>
-              <SelectItem value="quiz">Quiz</SelectItem>
-              <SelectItem value="assignment">Assignment</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="lesson-duration">Duration (minutes)</Label>
-          <Input
-            id="lesson-duration"
-            type="number"
-            min={0}
-            value={values.duration ?? 0}
-            onChange={(e) => setValues((v) => ({ ...v, duration: Number(e.target.value) }))}
-            placeholder="0"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="lesson-content-url">Content URL</Label>
-        <Input
-          id="lesson-content-url"
-          value={values.contentUrl || ""}
-          onChange={(e) => setValues((v) => ({ ...v, contentUrl: e.target.value }))}
-          placeholder="https://..."
         />
       </div>
 

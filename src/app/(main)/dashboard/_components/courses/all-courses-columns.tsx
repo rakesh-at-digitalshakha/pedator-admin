@@ -52,10 +52,17 @@ export const allCoursesColumns = ({
   },
   {
     accessorKey: "categoryId",
-    header: "Category",
+    header: "Hierarchy",
     cell: ({ row }) => {
       const course = row.original;
-      return <span className="text-sm">{course.categoryId?.name || "-"}</span>;
+      return (
+        <div className="flex max-w-xs flex-col text-sm">
+          <span>{course.categoryId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.subCategoryId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.moduleId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.lessonId?.name || "-"}</span>
+        </div>
+      );
     },
     enableSorting: false,
   },

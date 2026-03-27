@@ -26,6 +26,33 @@ export type SubCategory = {
   updatedAt: string;
 };
 
+export type CourseModule = {
+  _id: string;
+  subCategoryId: string;
+  subCategoryName?: string | null;
+  name: string;
+  description?: string;
+  status: boolean;
+  order?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CourseLesson = {
+  _id: string;
+  moduleId: string;
+  moduleName?: string | null;
+  name: string;
+  description?: string;
+  contentType?: "video" | "text" | "quiz" | "assignment" | "other";
+  contentUrl?: string;
+  duration?: number;
+  status: boolean;
+  order?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CreateCategoryRequest = {
   name: string;
   description?: string;
@@ -42,4 +69,23 @@ export type CreateSubCategoryRequest = {
   name: string;
   description?: string;
   status?: boolean;
+};
+
+export type CreateCourseModuleRequest = {
+  subCategoryId: string;
+  name: string;
+  description?: string;
+  status?: boolean;
+  order?: number;
+};
+
+export type CreateCourseLessonRequest = {
+  moduleId: string;
+  name: string;
+  description?: string;
+  contentType?: "video" | "text" | "quiz" | "assignment" | "other";
+  contentUrl?: string;
+  duration?: number;
+  status?: boolean;
+  order?: number;
 };

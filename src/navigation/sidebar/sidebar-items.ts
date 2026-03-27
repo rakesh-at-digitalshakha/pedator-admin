@@ -154,6 +154,18 @@ export const sidebarItems: NavGroup[] = [
             icon: FolderTree,
             resource: "courses",
           },
+          {
+            title: "Modules",
+            url: "/dashboard/modules",
+            icon: Layers,
+            resource: "courses",
+          },
+          {
+            title: "Lessons",
+            url: "/dashboard/lessons",
+            icon: Boxes,
+            resource: "courses",
+          },
         ],
       },
       {

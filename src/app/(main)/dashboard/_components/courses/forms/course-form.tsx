@@ -13,6 +13,8 @@ export type CourseFormValues = {
   description: string;
   categoryId: string;
   subCategoryId?: string;
+  moduleId?: string;
+  lessonId?: string;
   price: number | string;
   status?: boolean;
   mentorId?: string;
@@ -22,6 +24,8 @@ export function CourseForm({
   initialValues,
   categories,
   subCategories,
+  modules,
+  lessons,
   mentors,
   onSubmit,
   onCancel,
@@ -31,6 +35,8 @@ export function CourseForm({
   initialValues: CourseFormValues;
   categories: Array<{ _id: string; name: string }>;
   subCategories?: Array<{ _id: string; name: string; categoryId: string }>;
+  modules?: Array<{ _id: string; name: string; subCategoryId: string }>;
+  lessons?: Array<{ _id: string; name: string; moduleId: string }>;
   mentors?: Array<{ _id: string; firstName: string; lastName: string }>;
   onSubmit: (values: CourseFormValues) => Promise<void> | void;
   onCancel: () => void;
@@ -40,6 +46,8 @@ export function CourseForm({
   const [values, setValues] = useState<CourseFormValues>(initialValues);
 
   const filteredSubCats = (subCategories || []).filter((s) => s.categoryId === values.categoryId);
+  const filteredModules = (modules || []).filter((m) => m.subCategoryId === values.subCategoryId);
+  const filteredLessons = (lessons || []).filter((l) => l.moduleId === values.moduleId);
 
   return (
     <div className="space-y-4">
@@ -87,7 +95,15 @@ export function CourseForm({
           <Label htmlFor="course-category">Category</Label>
           <Select
             value={values.categoryId || ""}
-            onValueChange={(value) => setValues((v) => ({ ...v, categoryId: value, subCategoryId: undefined }))}
+            onValueChange={(value) =>
+              setValues((v) => ({
+                ...v,
+                categoryId: value,
+                subCategoryId: undefined,
+                moduleId: undefined,
+                lessonId: undefined,
+              }))
+            }
           >
             <SelectTrigger id="course-category">
               <SelectValue placeholder="Select a category" />
@@ -105,7 +121,7 @@ export function CourseForm({
           <Label htmlFor="course-subcategory">Sub-Category</Label>
           <Select
             value={values.subCategoryId || ""}
-            onValueChange={(value) => setValues((v) => ({ ...v, subCategoryId: value }))}
+            onValueChange={(value) => setValues((v) => ({ ...v, subCategoryId: value, moduleId: undefined, lessonId: undefined }))}
           >
             <SelectTrigger id="course-subcategory">
               <SelectValue placeholder="Select a sub-category" />
@@ -114,6 +130,46 @@ export function CourseForm({
               {filteredSubCats.map((s) => (
                 <SelectItem key={s._id} value={s._id}>
                   {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="course-module">Module</Label>
+          <Select
+            value={values.moduleId || ""}
+            onValueChange={(value) => setValues((v) => ({ ...v, moduleId: value, lessonId: undefined }))}
+          >
+            <SelectTrigger id="course-module">
+              <SelectValue placeholder="Select a module" />
+            </SelectTrigger>
+            <SelectContent>
+              {filteredModules.map((module) => (
+                <SelectItem key={module._id} value={module._id}>
+                  {module.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="course-lesson">Lesson</Label>
+          <Select
+            value={values.lessonId || ""}
+            onValueChange={(value) => setValues((v) => ({ ...v, lessonId: value }))}
+          >
+            <SelectTrigger id="course-lesson">
+              <SelectValue placeholder="Select a lesson" />
+            </SelectTrigger>
+            <SelectContent>
+              {filteredLessons.map((lesson) => (
+                <SelectItem key={lesson._id} value={lesson._id}>
+                  {lesson.name}
                 </SelectItem>
               ))}
             </SelectContent>

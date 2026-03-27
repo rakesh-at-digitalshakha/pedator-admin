@@ -21,6 +21,8 @@ export const useGetAllCourses = (filters?: CourseFilters) => {
       if (filters?.status) params.append("status", filters.status);
       if (filters?.categoryId) params.append("categoryId", filters.categoryId);
       if (filters?.subCategoryId) params.append("subCategoryId", filters.subCategoryId);
+      if (filters?.moduleId) params.append("moduleId", filters.moduleId);
+      if (filters?.lessonId) params.append("lessonId", filters.lessonId);
       if (filters?.mentorId) params.append("mentorId", filters.mentorId);
       if (filters?.search) params.append("search", filters.search);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);

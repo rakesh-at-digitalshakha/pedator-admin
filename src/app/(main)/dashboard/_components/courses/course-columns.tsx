@@ -11,6 +11,8 @@ import {
   useDeleteCourse,
   useUpdateCourse,
   useGetAllCategories,
+  useGetAllLessons,
+  useGetAllModules,
   useGetAllSubCategories,
 } from "@/hooks/api";
 import type { Course } from "@/types/api";
@@ -55,10 +57,17 @@ export const courseColumns: ColumnDef<Course>[] = [
   },
   {
     accessorKey: "categoryId.name",
-    header: "Category",
+    header: "Hierarchy",
     cell: ({ row }) => {
       const course = row.original;
-      return <span className="text-sm">{course.categoryId.name}</span>;
+      return (
+        <div className="flex max-w-xs flex-col text-sm">
+          <span>{course.categoryId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.subCategoryId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.moduleId?.name || "-"}</span>
+          <span className="text-muted-foreground text-xs">{course.lessonId?.name || "-"}</span>
+        </div>
+      );
     },
   },
   {
@@ -113,6 +122,8 @@ export const courseColumns: ColumnDef<Course>[] = [
       const [showEditDialog, setShowEditDialog] = useState(false);
       const { data: categoriesData } = useGetAllCategories();
       const { data: subCategoriesData } = useGetAllSubCategories();
+      const { data: modulesData } = useGetAllModules();
+      const { data: lessonsData } = useGetAllLessons();
 
       const handleApprove = async () => {
         try {
@@ -194,6 +205,8 @@ export const courseColumns: ColumnDef<Course>[] = [
                   description: course.description,
                   categoryId: course.categoryId._id,
                   subCategoryId: course.subCategoryId?._id,
+                  moduleId: course.moduleId?._id,
+                  lessonId: course.lessonId?._id,
                   price: course.price,
                   status: course.status,
                 }}
@@ -202,6 +215,16 @@ export const courseColumns: ColumnDef<Course>[] = [
                   _id: s._id,
                   name: s.name,
                   categoryId: s.categoryId,
+                }))}
+                modules={(modulesData?.data ?? []).map((module: any) => ({
+                  _id: module._id,
+                  name: module.name,
+                  subCategoryId: module.subCategoryId?._id ?? module.subCategoryId,
+                }))}
+                lessons={(lessonsData?.data ?? []).map((lesson: any) => ({
+                  _id: lesson._id,
+                  name: lesson.name,
+                  moduleId: lesson.moduleId?._id ?? lesson.moduleId,
                 }))}
                 loading={updateMutation.isPending}
                 onCancel={() => setShowEditDialog(false)}
@@ -214,6 +237,8 @@ export const courseColumns: ColumnDef<Course>[] = [
                       status: values.status,
                       categoryId: values.categoryId,
                       subCategoryId: values.subCategoryId,
+                      moduleId: values.moduleId,
+                      lessonId: values.lessonId,
                     };
                     await updateMutation.mutateAsync({ id: course._id, data: payload });
                     toast.success("Course updated successfully");

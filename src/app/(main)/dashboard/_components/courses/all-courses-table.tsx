@@ -6,7 +6,6 @@ import { Plus, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/data-table/data-table";
@@ -26,6 +25,8 @@ import {
   useUpdateCourse,
   useDeleteCourse,
   useGetAllCategories,
+  useGetAllLessons,
+  useGetAllModules,
   useGetAllSubCategories,
   useGetAllMentors,
   useCreateCourse,
@@ -50,6 +51,9 @@ export function AllCoursesTable() {
   const [searchValue, setSearchValue] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
+  const [subCategoryFilter, setSubCategoryFilter] = React.useState<string>("all");
+  const [moduleFilter, setModuleFilter] = React.useState<string>("all");
+  const [lessonFilter, setLessonFilter] = React.useState<string>("all");
 
   // Reject dialog state
   const [showRejectDialog, setShowRejectDialog] = React.useState(false);
@@ -77,9 +81,11 @@ export function AllCoursesTable() {
   const { mutate: rejectCourse, isPending: isRejecting } = useRejectCourse();
   const { data: categoriesData } = useGetAllCategories();
   const { data: subCategoriesData } = useGetAllSubCategories();
+  const { data: modulesData } = useGetAllModules();
+  const { data: lessonsData } = useGetAllLessons();
   const { data: mentorsData } = useGetAllMentors({ page: 1, limit: 100 });
 
-  const courses = coursesData?.data ?? [];
+  const courses = coursesData?.data?.data ?? [];
 
   const handleEdit = React.useCallback((course: Course) => {
     setEditingCourse(course);
@@ -111,9 +117,48 @@ export function AllCoursesTable() {
 
   const handleCategoryChange = React.useCallback((value: string) => {
     setCategoryFilter(value);
+    setSubCategoryFilter("all");
+    setModuleFilter("all");
+    setLessonFilter("all");
     setFilters((prev) => ({
       ...prev,
       categoryId: value === "all" ? undefined : value,
+      subCategoryId: undefined,
+      moduleId: undefined,
+      lessonId: undefined,
+      page: 1,
+    }));
+  }, []);
+
+  const handleSubCategoryChange = React.useCallback((value: string) => {
+    setSubCategoryFilter(value);
+    setModuleFilter("all");
+    setLessonFilter("all");
+    setFilters((prev) => ({
+      ...prev,
+      subCategoryId: value === "all" ? undefined : value,
+      moduleId: undefined,
+      lessonId: undefined,
+      page: 1,
+    }));
+  }, []);
+
+  const handleModuleChange = React.useCallback((value: string) => {
+    setModuleFilter(value);
+    setLessonFilter("all");
+    setFilters((prev) => ({
+      ...prev,
+      moduleId: value === "all" ? undefined : value,
+      lessonId: undefined,
+      page: 1,
+    }));
+  }, []);
+
+  const handleLessonChange = React.useCallback((value: string) => {
+    setLessonFilter(value);
+    setFilters((prev) => ({
+      ...prev,
+      lessonId: value === "all" ? undefined : value,
       page: 1,
     }));
   }, []);
@@ -182,6 +227,8 @@ export function AllCoursesTable() {
         description: values.description,
         categoryId: values.categoryId,
         subCategoryId: values.subCategoryId,
+        moduleId: values.moduleId,
+        lessonId: values.lessonId,
         mentorId: values.mentorId,
         price: typeof values.price === "string" ? parseFloat(values.price) : values.price,
         status: values.status,
@@ -216,6 +263,8 @@ export function AllCoursesTable() {
         description: values.description,
         categoryId: values.categoryId,
         subCategoryId: values.subCategoryId,
+        moduleId: values.moduleId,
+        lessonId: values.lessonId,
         mentorId: values.mentorId,
         price: Number(values.price),
         status: values.status ?? true,
@@ -249,6 +298,33 @@ export function AllCoursesTable() {
   );
 
   // Create table instance at top level to follow Rules of Hooks
+  const filteredSubCategories = React.useMemo(
+    () =>
+      (subCategoriesData?.data || []).filter((subCategory: any) => {
+        if (categoryFilter === "all") return true;
+        return (subCategory.categoryId?._id ?? subCategory.categoryId) === categoryFilter;
+      }),
+    [subCategoriesData, categoryFilter]
+  );
+
+  const filteredModules = React.useMemo(
+    () =>
+      (modulesData?.data || []).filter((module: any) => {
+        if (subCategoryFilter === "all") return true;
+        return (module.subCategoryId?._id ?? module.subCategoryId) === subCategoryFilter;
+      }),
+    [modulesData, subCategoryFilter]
+  );
+
+  const filteredLessons = React.useMemo(
+    () =>
+      (lessonsData?.data || []).filter((lesson: any) => {
+        if (moduleFilter === "all") return true;
+        return (lesson.moduleId?._id ?? lesson.moduleId) === moduleFilter;
+      }),
+    [lessonsData, moduleFilter]
+  );
+
   const table = useDataTableInstance({
     data: courses,
     columns,
@@ -312,12 +388,54 @@ export function AllCoursesTable() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={subCategoryFilter} onValueChange={handleSubCategoryChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by subcategory" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subcategories</SelectItem>
+              {filteredSubCategories.map((subCategory: any) => (
+                <SelectItem key={subCategory._id} value={subCategory._id}>
+                  {subCategory.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={moduleFilter} onValueChange={handleModuleChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by module" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Modules</SelectItem>
+              {filteredModules.map((module: any) => (
+                <SelectItem key={module._id} value={module._id}>
+                  {module.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={lessonFilter} onValueChange={handleLessonChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by lesson" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Lessons</SelectItem>
+              {filteredLessons.map((lesson: any) => (
+                <SelectItem key={lesson._id} value={lesson._id}>
+                  {lesson.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant="outline"
             onClick={() => {
               setSearchValue("");
               setStatusFilter("all");
               setCategoryFilter("all");
+              setSubCategoryFilter("all");
+              setModuleFilter("all");
+              setLessonFilter("all");
               setFilters({ page: 1, limit: 10, sortBy: "createdAt", order: "desc" });
             }}
           >
@@ -384,6 +502,8 @@ export function AllCoursesTable() {
               description: "",
               categoryId: "",
               subCategoryId: "",
+              moduleId: "",
+              lessonId: "",
               price: "",
               status: true,
               mentorId: "",
@@ -393,6 +513,16 @@ export function AllCoursesTable() {
               _id: s._id,
               name: s.name,
               categoryId: s.categoryId?._id ?? s.categoryId,
+            }))}
+            modules={(modulesData?.data ?? []).map((module: any) => ({
+              _id: module._id,
+              name: module.name,
+              subCategoryId: module.subCategoryId?._id ?? module.subCategoryId,
+            }))}
+            lessons={(lessonsData?.data ?? []).map((lesson: any) => ({
+              _id: lesson._id,
+              name: lesson.name,
+              moduleId: lesson.moduleId?._id ?? lesson.moduleId,
             }))}
             mentors={(mentorsData?.data ?? []).filter((m: any) => m.isProfileApproved)}
             showMentorField={true}
@@ -417,6 +547,8 @@ export function AllCoursesTable() {
                 description: editingCourse.description,
                 categoryId: editingCourse.categoryId?._id || "",
                 subCategoryId: editingCourse.subCategoryId?._id || "",
+                moduleId: editingCourse.moduleId?._id || "",
+                lessonId: editingCourse.lessonId?._id || "",
                 price: editingCourse.price,
                 status: editingCourse.status,
                 mentorId: editingCourse.mentorId?._id || "",
@@ -426,6 +558,16 @@ export function AllCoursesTable() {
                 _id: s._id,
                 name: s.name,
                 categoryId: s.categoryId?._id || s.categoryId,
+              }))}
+              modules={(modulesData?.data ?? []).map((module: any) => ({
+                _id: module._id,
+                name: module.name,
+                subCategoryId: module.subCategoryId?._id ?? module.subCategoryId,
+              }))}
+              lessons={(lessonsData?.data ?? []).map((lesson: any) => ({
+                _id: lesson._id,
+                name: lesson.name,
+                moduleId: lesson.moduleId?._id ?? lesson.moduleId,
               }))}
               mentors={(mentorsData?.data || []).filter((m: any) => m.isProfileApproved)}
               showMentorField={true}

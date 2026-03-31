@@ -52,16 +52,16 @@ export function ModulesTable() {
     status: true,
   });
 
-  const handleCreateModule = async () => {
+  const handleCreateModule = async (values: ModuleFormValues) => {
     try {
       if (editingModule) {
         await updateModuleMutation.mutateAsync({
           id: editingModule._id,
-          data: moduleForm,
+          data: values,
         });
         toast.success("Module updated successfully");
       } else {
-        await createModuleMutation.mutateAsync(moduleForm);
+        await createModuleMutation.mutateAsync(values);
         toast.success("Module created successfully");
       }
       setShowModuleDialog(false);
@@ -228,7 +228,7 @@ export function ModulesTable() {
             onCancel={() => setShowModuleDialog(false)}
             onSubmit={async (values) => {
               setModuleForm(values);
-              await handleCreateModule();
+              await handleCreateModule(values);
             }}
             loading={createModuleMutation.isPending || updateModuleMutation.isPending}
           />

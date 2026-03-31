@@ -52,16 +52,16 @@ export function LessonsTable() {
     status: true,
   });
 
-  const handleCreateLesson = async () => {
+  const handleCreateLesson = async (values: LessonFormValues) => {
     try {
       if (editingLesson) {
         await updateLessonMutation.mutateAsync({
           id: editingLesson._id,
-          data: lessonForm,
+          data: values,
         });
         toast.success("Lesson updated successfully");
       } else {
-        await createLessonMutation.mutateAsync(lessonForm);
+        await createLessonMutation.mutateAsync(values);
         toast.success("Lesson created successfully");
       }
       setShowLessonDialog(false);
@@ -235,7 +235,7 @@ export function LessonsTable() {
             onCancel={() => setShowLessonDialog(false)}
             onSubmit={async (values) => {
               setLessonForm(values);
-              await handleCreateLesson();
+              await handleCreateLesson(values);
             }}
             loading={createLessonMutation.isPending || updateLessonMutation.isPending}
           />

@@ -104,16 +104,16 @@ export function CategoriesManagement() {
     }
   };
 
-  const handleCreateSubCategory = async () => {
+  const handleCreateSubCategory = async (values: SubCategoryFormValues) => {
     try {
       if (editingSubCategory) {
         await updateSubCategoryMutation.mutateAsync({
           id: editingSubCategory._id,
-          data: subCategoryForm,
+          data: values,
         });
         toast.success("Sub-category updated successfully");
       } else {
-        await createSubCategoryMutation.mutateAsync(subCategoryForm);
+        await createSubCategoryMutation.mutateAsync(values);
         toast.success("Sub-category created successfully");
       }
       setShowSubCategoryDialog(false);
@@ -436,8 +436,7 @@ export function CategoriesManagement() {
             categories={categoriesData?.data || []}
             onCancel={() => setShowSubCategoryDialog(false)}
             onSubmit={async (values) => {
-              setSubCategoryForm(values);
-              await handleCreateSubCategory();
+              await handleCreateSubCategory(values);
             }}
             loading={createSubCategoryMutation.isPending || updateSubCategoryMutation.isPending}
           />

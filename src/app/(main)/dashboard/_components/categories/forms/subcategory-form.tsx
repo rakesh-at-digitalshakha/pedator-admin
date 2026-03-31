@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type SubCategoryFormValues = {
@@ -28,6 +29,10 @@ export function SubCategoryForm({
   loading?: boolean;
 }) {
   const [values, setValues] = useState<SubCategoryFormValues>(initialValues);
+
+  useEffect(() => {
+    setValues(initialValues);
+  }, [initialValues]);
 
   return (
     <div className="space-y-4">
@@ -68,11 +73,30 @@ export function SubCategoryForm({
           rows={3}
         />
       </div>
+      <div className="flex items-center justify-between">
+        <Label htmlFor="subcategory-status">Active</Label>
+        <Switch
+          id="subcategory-status"
+          checked={!!values.status}
+          onCheckedChange={(checked) => setValues((v) => ({ ...v, status: checked }))}
+        />
+      </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onCancel} disabled={loading}>
           Cancel
         </Button>
-        <Button onClick={() => onSubmit(values)} disabled={loading || !values.name.trim() || !values.categoryId}>
+        <Button
+          onClick={() =>
+            onSubmit({
+              ...values,
+              name: values.name.trim(),
+              description: values.description?.trim() ?? "",
+              categoryId: values.categoryId,
+              status: values.status ?? true,
+            })
+          }
+          disabled={loading || !values.name.trim() || !values.categoryId}
+        >
           Save
         </Button>
       </div>

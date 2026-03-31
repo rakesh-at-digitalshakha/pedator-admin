@@ -73,6 +73,7 @@ export function CategoriesManagement() {
   const [categoryForm, setCategoryForm] = useState<CategoryFormValues>({
     name: "",
     description: "",
+    icon: "",
     status: true,
   });
 
@@ -83,20 +84,20 @@ export function CategoriesManagement() {
     status: true,
   });
 
-  const handleCreateCategory = async () => {
+  const handleCreateCategory = async (values: CategoryFormValues) => {
     try {
       if (editingCategory) {
         await updateCategoryMutation.mutateAsync({
           id: editingCategory._id,
-          data: categoryForm,
+          data: values,
         });
         toast.success("Category updated successfully");
       } else {
-        await createCategoryMutation.mutateAsync(categoryForm);
+        await createCategoryMutation.mutateAsync(values);
         toast.success("Category created successfully");
       }
       setShowCategoryDialog(false);
-      setCategoryForm({ name: "", description: "", status: true });
+      setCategoryForm({ name: "", description: "", icon: "", status: true });
       setEditingCategory(null);
     } catch (error) {
       toast.error("Failed to save category");
@@ -162,6 +163,7 @@ export function CategoriesManagement() {
     setCategoryForm({
       name: category.name,
       description: category.description || "",
+      icon: category.icon || "",
       status: category.status ?? true,
     });
     setShowCategoryDialog(true);
@@ -208,7 +210,7 @@ export function CategoriesManagement() {
               <Button
                 onClick={() => {
                   setEditingCategory(null);
-                  setCategoryForm({ name: "", description: "", status: true });
+                  setCategoryForm({ name: "", description: "", icon: "", status: true });
                   setShowCategoryDialog(true);
                 }}
               >
@@ -415,8 +417,7 @@ export function CategoriesManagement() {
             initialValues={categoryForm}
             onCancel={() => setShowCategoryDialog(false)}
             onSubmit={async (values) => {
-              setCategoryForm(values);
-              await handleCreateCategory();
+              await handleCreateCategory(values);
             }}
             loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
           />

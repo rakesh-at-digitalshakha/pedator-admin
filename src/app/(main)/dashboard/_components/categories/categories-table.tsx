@@ -50,23 +50,24 @@ export function CategoriesTable() {
   const [categoryForm, setCategoryForm] = useState<CategoryFormValues>({
     name: "",
     description: "",
+    icon: "",
     status: true,
   });
 
-  const handleCreateCategory = async () => {
+  const handleCreateCategory = async (values: CategoryFormValues) => {
     try {
       if (editingCategory) {
         await updateCategoryMutation.mutateAsync({
           id: editingCategory._id,
-          data: categoryForm,
+          data: values,
         });
         toast.success("Category updated successfully");
       } else {
-        await createCategoryMutation.mutateAsync(categoryForm);
+        await createCategoryMutation.mutateAsync(values);
         toast.success("Category created successfully");
       }
       setShowCategoryDialog(false);
-      setCategoryForm({ name: "", description: "", status: true });
+      setCategoryForm({ name: "", description: "", icon: "", status: true });
       setEditingCategory(null);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to save category");
@@ -95,6 +96,7 @@ export function CategoriesTable() {
     setCategoryForm({
       name: category.name,
       description: category.description || "",
+      icon: category.icon || "",
       status: category.status ?? true,
     });
     setShowCategoryDialog(true);
@@ -120,7 +122,7 @@ export function CategoriesTable() {
             <Button
               onClick={() => {
                 setEditingCategory(null);
-                setCategoryForm({ name: "", description: "", status: true });
+                setCategoryForm({ name: "", description: "", icon: "", status: true });
                 setShowCategoryDialog(true);
               }}
             >
@@ -212,8 +214,7 @@ export function CategoriesTable() {
             initialValues={categoryForm}
             onCancel={() => setShowCategoryDialog(false)}
             onSubmit={async (values) => {
-              setCategoryForm(values);
-              await handleCreateCategory();
+              await handleCreateCategory(values);
             }}
             loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
           />

@@ -17,6 +17,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { cn, getInitials } from "@/lib/utils";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { useAdminStore } from "@/stores/admin/admin-provider";
 import { useAuthStore } from "@/stores/auth/auth-provider";
 import { ChangePasswordDialog } from "../admins/change-password-dialog";
@@ -46,7 +47,7 @@ export function AccountSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="size-9 cursor-pointer rounded-lg">
-          <AvatarImage src={user.profilePicture || undefined} alt={user.name} />
+          <AvatarImage src={resolveMediaUrl(user.profilePicture) || undefined} alt={user.name} />
           <AvatarFallback className="rounded-lg">{getInitials(user.name || user.email)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -54,7 +55,7 @@ export function AccountSwitcher() {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="size-9 rounded-lg">
-              <AvatarImage src={user.profilePicture || undefined} alt={user.name} />
+              <AvatarImage src={resolveMediaUrl(user.profilePicture) || undefined} alt={user.name} />
               <AvatarFallback className="rounded-lg">{getInitials(user.name || user.email)}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">

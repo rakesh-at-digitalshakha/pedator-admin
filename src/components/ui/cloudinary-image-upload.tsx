@@ -4,6 +4,7 @@ import * as React from "react";
 import { ImageIcon, Upload, X, Loader2 } from "lucide-react";
 
 import { apiClient } from "@/lib/api/client";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -76,14 +77,14 @@ export function CloudinaryImageUpload({
       formData.append("file", file);
       formData.append("folder", folder);
 
-      const res = await apiClient.post<{ success: boolean; data: { url: string } }>(
-        "/cloudinary/upload/image",
+      const res = await apiClient.post<{ success: boolean; data: { url: string; path?: string } }>(
+        "/s3/upload/image",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (res.data.success) {
-        updateUrl(res.data.data.url);
+        updateUrl(res.data.data.path ?? res.data.data.url);
       } else {
         setError("Upload failed.");
       }
@@ -110,7 +111,7 @@ export function CloudinaryImageUpload({
         <div className="relative group w-full rounded-md border overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={url}
+            src={resolveMediaUrl(url)}
             alt={label ?? name}
             className="w-full max-h-48 object-contain bg-black/5"
           />

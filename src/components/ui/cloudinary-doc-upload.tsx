@@ -4,6 +4,7 @@ import * as React from "react";
 import { FileIcon, Upload, X, Loader2, ExternalLink } from "lucide-react";
 
 import { apiClient } from "@/lib/api/client";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -96,13 +97,13 @@ export function CloudinaryDocUpload({
         formData.append("file", file);
         formData.append("folder", folder);
 
-        const res = await apiClient.post<{ success: boolean; data: { url: string } }>(
-          "/cloudinary/upload/pdf",
+        const res = await apiClient.post<{ success: boolean; data: { url: string; path?: string } }>(
+          "/s3/upload/pdf",
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        if (res.data.success) uploaded.push(res.data.data.url);
+        if (res.data.success) uploaded.push(res.data.data.path ?? res.data.data.url);
         else setError("One or more files failed to upload.");
       }
 
@@ -141,7 +142,7 @@ export function CloudinaryDocUpload({
             >
               <FileIcon className="size-4 shrink-0 text-muted-foreground" />
               <a
-                href={u}
+                href={resolveMediaUrl(u)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 truncate text-xs hover:underline text-blue-600 dark:text-blue-400"

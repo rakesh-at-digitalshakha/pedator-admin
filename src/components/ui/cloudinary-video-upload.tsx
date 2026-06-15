@@ -4,6 +4,7 @@ import * as React from "react";
 import { VideoIcon, Upload, X, Loader2, Film } from "lucide-react";
 
 import { apiClient } from "@/lib/api/client";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -72,8 +73,8 @@ export function CloudinaryVideoUpload({
       formData.append("file", file);
       formData.append("folder", folder);
 
-      const res = await apiClient.post<{ success: boolean; data: { url: string } }>(
-        "/cloudinary/upload/video",
+      const res = await apiClient.post<{ success: boolean; data: { url: string; path?: string } }>(
+        "/s3/upload/video",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -84,7 +85,7 @@ export function CloudinaryVideoUpload({
       );
 
       if (res.data.success) {
-        updateUrl(res.data.data.url);
+        updateUrl(res.data.data.path ?? res.data.data.url);
       } else {
         setError("Upload failed.");
       }
@@ -109,7 +110,7 @@ export function CloudinaryVideoUpload({
       {url ? (
         <div className="relative rounded-md border overflow-hidden bg-black">
           <video
-            src={url}
+            src={resolveMediaUrl(url)}
             controls
             className="w-full max-h-48 object-contain"
           />
@@ -158,7 +159,7 @@ export function CloudinaryVideoUpload({
               <Loader2 className="size-6 animate-spin" />
               <span>Uploading… {progress > 0 ? `${progress}%` : ""}</span>
               {progress > 0 && (
-                <div className="w-full max-w-[200px] h-1.5 rounded-full bg-muted-foreground/20 overflow-hidden">
+                <div className="w-full max-w-50 h-1.5 rounded-full bg-muted-foreground/20 overflow-hidden">
                   <div
                     className="h-full bg-primary rounded-full transition-all"
                     style={{ width: `${progress}%` }}

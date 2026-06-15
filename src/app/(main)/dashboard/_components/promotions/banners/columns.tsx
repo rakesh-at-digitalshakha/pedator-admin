@@ -10,6 +10,7 @@ import { Copy, Eye, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 export type BannerRow = {
   id: string;
@@ -39,7 +40,7 @@ export function useBannerColumns(): ColumnDef<BannerRow, any>[] {
           {row.original.imageUrl && (
             <div className="relative w-12 h-12 rounded overflow-hidden bg-muted">
               <Image
-                src={row.original.imageUrl}
+                src={resolveMediaUrl(row.original.imageUrl)}
                 alt={row.original.title || "Banner"}
                 fill
                 className="object-cover"
@@ -115,7 +116,7 @@ export function useBannerColumns(): ColumnDef<BannerRow, any>[] {
               <Edit className="w-4 h-4 mr-2" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open(row.original.imageUrl, "_blank")}>
+            <DropdownMenuItem onClick={() => window.open(resolveMediaUrl(row.original.imageUrl), "_blank")}>
               <Eye className="w-4 h-4 mr-2" />
               Preview
             </DropdownMenuItem>

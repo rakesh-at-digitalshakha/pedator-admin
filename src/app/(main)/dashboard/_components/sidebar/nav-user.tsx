@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { getInitials } from "@/lib/utils";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { useAuthStore } from "@/stores/auth/auth-provider";
 import { toast } from "sonner";
 
@@ -48,7 +49,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.profilePicture || undefined} alt={user.name} />
+                <AvatarImage src={resolveMediaUrl(user.profilePicture) || undefined} alt={user.name} />
                 <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -67,7 +68,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.profilePicture || undefined} alt={user.name} />
+                  <AvatarImage src={resolveMediaUrl(user.profilePicture) || undefined} alt={user.name} />
                   <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">

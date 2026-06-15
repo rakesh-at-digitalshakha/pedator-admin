@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAdminStore } from "@/stores/admin/admin-provider";
 import { useGetAdminProfile, useUpdateAdminProfile, useChangePassword } from "@/hooks/api";
 import { apiClient } from "@/lib/api/client";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -105,17 +106,17 @@ export default function ProfilePage() {
       fd.append("file", file);
       fd.append("folder", "pedator/admins");
 
-      const res = await apiClient.post<{ success: boolean; data: { url: string } }>(
-        "/cloudinary/upload/image",
+      const res = await apiClient.post<{ success: boolean; data: { url: string; path?: string } }>(
+        "/s3/upload/image",
         fd,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (res.data.success) {
-        const url = res.data.data.url;
-        setForm((prev) => ({ ...prev, profilePicture: url }));
+        const uploadedPath = res.data.data.path ?? res.data.data.url;
+        setForm((prev) => ({ ...prev, profilePicture: uploadedPath }));
         // Immediately persist the new avatar
-        const updated = await updateMutation.mutateAsync({ profilePicture: url } as any);
+        const updated = await updateMutation.mutateAsync({ profilePicture: uploadedPath } as any);
         if ((updated as any)?.data) setUser((updated as any).data);
         toast.success("Avatar updated");
       }
@@ -217,7 +218,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-5">
                   <div className="relative group">
                     <Avatar className="size-24 ring-2 ring-border">
-                      <AvatarImage src={form.profilePicture || undefined} alt={form.name} />
+                      <AvatarImage src={resolveMediaUrl(form.profilePicture) || undefined} alt={form.name} />
                       <AvatarFallback className="text-2xl bg-muted">
                         {form.name ? getInitials(form.name) : <User className="w-8 h-8" />}
                       </AvatarFallback>

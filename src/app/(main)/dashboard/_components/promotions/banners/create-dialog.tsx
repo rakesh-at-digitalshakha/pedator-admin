@@ -11,10 +11,11 @@ import { useCreateBanner } from "@/hooks/api/use-promotions";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 const bannerSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  imageUrl: z.string().url("Valid image URL required"),
+  imageUrl: z.string().min(1, "Image path is required"),
   position: z.number().int().positive("Position must be positive").default(1),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
@@ -119,7 +120,7 @@ export function BannerCreateDialog({ open, onOpenChange }: CreateDialogProps) {
                   {field.value && (
                     <div className="relative w-full h-40 rounded overflow-hidden bg-muted mt-2">
                       <Image
-                        src={field.value}
+                        src={resolveMediaUrl(field.value)}
                         alt="Preview"
                         fill
                         className="object-cover"

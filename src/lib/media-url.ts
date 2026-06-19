@@ -14,7 +14,11 @@ export function resolveMediaUrl(pathOrUrl?: string | null): string {
     return value;
   }
 
-  const base = process.env.NEXT_PUBLIC_CLOUDFRONT_BASE_URL?.trim() || "";
+  // Prefer the explicit S3 base URL; fall back to the legacy CloudFront var.
+  const base =
+    process.env.NEXT_PUBLIC_S3_BASE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_CLOUDFRONT_BASE_URL?.trim() ||
+    "";
   if (!base) return value;
 
   const normalizedBase = base.replace(/\/+$/, "");

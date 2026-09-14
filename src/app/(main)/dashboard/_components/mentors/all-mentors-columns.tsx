@@ -31,6 +31,7 @@ export const allMentorsColumns = ({
   onDelete,
   onApprove,
   onReject,
+  onDeactivate,
   isApproving = false,
   isRejecting = false,
 }: AllMentorsColumnsProps = {}): ColumnDef<MentorUser>[] => [
@@ -167,11 +168,20 @@ export const allMentorsColumns = ({
               Edit mentor
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {/* Deactivate/Reactivate action */}
-            {mentor.isProfileApproved && (
+            {/* Deactivate / Reactivate — available for approved mentors, and for already-deactivated ones */}
+            {(mentor.isProfileApproved || mentor.isDeactivated) && !mentor.isDeleted && (
               <DropdownMenuItem onClick={() => onDeactivate?.(mentor)} disabled={isPending}>
-                <X className="mr-2 size-4 text-orange-600" />
-                {mentor.isDeactivated ? "Reactivate" : "Deactivate"} Mentor
+                {mentor.isDeactivated ? (
+                  <>
+                    <Check className="mr-2 size-4 text-green-600" />
+                    Reactivate Mentor
+                  </>
+                ) : (
+                  <>
+                    <X className="mr-2 size-4 text-orange-600" />
+                    Deactivate Mentor
+                  </>
+                )}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />

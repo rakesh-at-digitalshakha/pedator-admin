@@ -134,7 +134,7 @@ export type RejectMentorRequest = {
 };
 
 export type MentorFilters = PaginationParams & {
-  status?: "approved" | "pending" | "rejected";
+  status?: "approved" | "pending" | "rejected" | "deactivated";
   search?: string;
   sortBy?: "createdAt" | "firstName" | "email";
   order?: "asc" | "desc";

@@ -129,6 +129,50 @@ export const useUpdateMentor = () => {
 };
 
 /**
+ * Deactivate mentor (Admin) — also deactivates related courses
+ */
+export const useDeactivateMentor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.put<ApiResponse<{ mentorId: string; isDeactivated: boolean }>>(
+        `${BASE}/mentors/${id}/deactivate`,
+      );
+      return response.data;
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["mentor", id], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["courses"], exact: false });
+    },
+  });
+};
+
+/**
+ * Reactivate mentor (Admin) — also reactivates related courses
+ */
+export const useReactivateMentor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.put<ApiResponse<{ mentorId: string; isDeactivated: boolean }>>(
+        `${BASE}/mentors/${id}/reactivate`,
+      );
+      return response.data;
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["mentor", id], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["unapproved-mentors"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["courses"], exact: false });
+    },
+  });
+};
+
+/**
  * Create mentor (Admin)
  */
 export const useCreateMentor = () => {

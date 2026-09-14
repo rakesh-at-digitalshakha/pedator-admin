@@ -31,6 +31,8 @@ import {
   useDeleteMentor,
   useApproveMentor,
   useRejectMentor,
+  useDeactivateMentor,
+  useReactivateMentor,
   useGetCountries,
   useGetCities,
 } from "@/hooks/api";
@@ -66,6 +68,8 @@ export function AllMentorsTable() {
   const { mutate: deleteMentor, isPending: isDeleting } = useDeleteMentor();
   const { mutate: approveMentor, isPending: isApproving } = useApproveMentor();
   const { mutate: rejectMentor, isPending: isRejecting } = useRejectMentor();
+  const { mutate: deactivateMentor, isPending: isDeactivating } = useDeactivateMentor();
+  const { mutate: reactivateMentor, isPending: isReactivating } = useReactivateMentor();
 
   const mentors = mentorsData?.data ?? [];
 
@@ -131,26 +135,22 @@ export function AllMentorsTable() {
   }, [rejectMentor, rejectingMentor, rejectionReason]);
 
   const handleDeactivate = React.useCallback((mentor: MentorUser) => {
-    const action = mentor.isDeactivated ? "reactivate" : "deactivate";
+    const isReactivatingMentor = !!mentor.isDeactivated;
+    const action = isReactivatingMentor ? "reactivate" : "deactivate";
     if (confirm(`Are you sure you want to ${action} ${mentor.firstName} ${mentor.lastName}?`)) {
-      updateMentor(
-        {
-          id: mentor._id,
-          data: { isDeactivated: !mentor.isDeactivated },
+      const mutation = isReactivatingMentor ? reactivateMentor : deactivateMentor;
+      mutation(mentor._id, {
+        onSuccess: () => {
+          toast.success(
+            `${mentor.firstName} ${mentor.lastName} has been ${isReactivatingMentor ? "reactivated" : "deactivated"} successfully`,
+          );
         },
-        {
-          onSuccess: () => {
-            toast.success(
-              `${mentor.firstName} ${mentor.lastName} has been ${action}d successfully`
-            );
-          },
-          onError: (error: any) => {
-            toast.error(error.response?.data?.message || `Failed to ${action} mentor`);
-          },
-        }
-      );
+        onError: (error: any) => {
+          toast.error(error.response?.data?.message || `Failed to ${action} mentor`);
+        },
+      });
     }
-  }, [updateMentor]);
+  }, [deactivateMentor, reactivateMentor]);
 
   const columns = React.useMemo(
     () =>
@@ -161,9 +161,9 @@ export function AllMentorsTable() {
         onReject: handleReject,
         onDeactivate: handleDeactivate,
         isApproving,
-        isRejecting,
+        isRejecting: isRejecting || isDeactivating || isReactivating,
       }),
-    [handleEdit, handleDelete, handleApprove, handleReject, handleDeactivate, isApproving, isRejecting],
+    [handleEdit, handleDelete, handleApprove, handleReject, handleDeactivate, isApproving, isRejecting, isDeactivating, isReactivating],
   );
 
   const table = useDataTableInstance({
@@ -188,7 +188,7 @@ export function AllMentorsTable() {
   const handleStatusFilterChange = (value: string) => {
     setFilters((prev) => ({
       ...prev,
-      status: value === "all" ? undefined : (value as "approved" | "pending" | "rejected"),
+      status: value === "all" ? undefined : (value as "approved" | "pending" | "rejected" | "deactivated"),
       page: 1,
     }));
   };
@@ -357,6 +357,7 @@ export function AllMentorsTable() {
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="deactivated">Deactivated</SelectItem>
                 </SelectContent>
               </Select>
               <Select

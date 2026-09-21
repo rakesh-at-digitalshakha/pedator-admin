@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingDown, TrendingUp, Users, UserCheck, DollarSign, Wallet } from "lucide-react";
+import { TrendingDown, TrendingUp, Users, UserCheck, IndianRupee, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,7 +102,7 @@ export function AdminStatsCards() {
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <DollarSign className="text-muted-foreground size-5" />{formatCurrency(statsData?.totalRevenue ?? 0)}
+            <IndianRupee className="text-muted-foreground size-5" />{formatCurrency(statsData?.totalRevenue ?? 0)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -120,7 +120,7 @@ export function AdminStatsCards() {
         <CardHeader>
           <CardDescription>Monthly Revenue</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            <DollarSign className="text-muted-foreground size-5" />{formatCurrency(statsData?.monthlyRevenue ?? 0)}
+            <IndianRupee className="text-muted-foreground size-5" />{formatCurrency(statsData?.monthlyRevenue ?? 0)}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

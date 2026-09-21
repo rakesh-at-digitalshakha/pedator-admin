@@ -9,14 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import { Badge } from "@/components/ui/badge";
-import { X, Download, DollarSign } from "lucide-react";
+import { X, Download, IndianRupee } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/utils";
 
 export default function PayoutsTable() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<string | undefined>(undefined);
+  const [status, setStatus] = useState<string>("pending");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [selectedPayout, setSelectedPayout]   = useState<PayoutRow | null>(null);
@@ -27,7 +27,12 @@ export default function PayoutsTable() {
   const rejectMutation  = useRejectPayout();
 
   const params = useMemo(
-    () => ({ search, status: status ?? "", page, limit }),
+    () => ({
+      search,
+      status: status || "pending",
+      page,
+      limit,
+    }),
     [search, status, page, limit]
   );
 
@@ -80,7 +85,7 @@ export default function PayoutsTable() {
 
   const handleClearFilter = (key: string) => {
     if (key === "search") setSearch("");
-    if (key === "status") setStatus(undefined);
+    if (key === "status") setStatus("pending");
   };
 
   const handleExport = () => {
@@ -151,21 +156,19 @@ export default function PayoutsTable() {
           />
           <Select
             onValueChange={(v) => {
-              setStatus(v === "all" ? undefined : v);
+              setStatus(v);
               setPage(1);
             }}
-            value={status || "all"}
+            value={status || "pending"}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="all">All</SelectItem>
             </SelectContent>
           </Select>
 
@@ -193,7 +196,7 @@ export default function PayoutsTable() {
               size="sm"
               onClick={() => {
                 setSearch("");
-                setStatus(undefined);
+                setStatus("pending");
               }}
             >
               Clear all
@@ -298,7 +301,7 @@ export default function PayoutsTable() {
                 <div>
                   <div className="text-sm text-muted-foreground">Amount</div>
                   <div className="text-2xl font-bold flex items-center gap-1">
-                    <DollarSign className="w-5 h-5" />
+                    <IndianRupee className="w-5 h-5" />
                     {selectedPayout.amount.toFixed(2)}
                   </div>
                 </div>

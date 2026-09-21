@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
-import { CheckCircle, XCircle, Clock, DollarSign, User, Eye, MoreHorizontal } from "lucide-react";
+import { CheckCircle, XCircle, Clock, IndianRupee, User, Eye, MoreHorizontal } from "lucide-react";
 
 export type PayoutRow = {
   id: string;
@@ -65,7 +65,7 @@ export function getPayoutColumns(callbacks: PayoutColumnCallbacks): ColumnDef<Pa
       header: "Amount",
       cell: ({ row }) => (
         <div className="flex items-center gap-1 font-bold">
-          <DollarSign className="w-4 h-4" />
+          <IndianRupee className="w-4 h-4" />
           {formatCurrency(row.original.amount)}
         </div>
       ),

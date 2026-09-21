@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import * as Recharts from "recharts";
-import { Users, DollarSign, BookOpen } from "lucide-react";
+import { Users, IndianRupee, BookOpen } from "lucide-react";
 
 // Mock data for charts
 const revenueData = [
@@ -75,7 +75,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-600">Total Revenue</p>
                 <h3 className="text-2xl font-bold">₹58.4K</h3>
               </div>
-              <DollarSign className="h-8 w-8 text-emerald-500" />
+              <IndianRupee className="h-8 w-8 text-emerald-500" />
             </div>
           </CardContent>
         </Card>

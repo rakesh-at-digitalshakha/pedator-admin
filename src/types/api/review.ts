@@ -74,8 +74,56 @@ export type MentorReview = {
   comment: string;
   mentorReply?: string;
   repliedAt?: string;
+  isHidden?: boolean;
+  report?: ReviewModerationRequest | null;
+  deletionRequest?: ReviewModerationRequest | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ReviewModerationStatus = "pending" | "approved" | "rejected";
+
+export type ReviewModerationRequest = {
+  status?: ReviewModerationStatus;
+  reason?: string;
+  requestedAt?: string;
+  reviewedAt?: string;
+  adminNote?: string;
+};
+
+export type ReviewPerson = {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+};
+
+export type ReviewModerationItem = {
+  _id: string;
+  source?: string;
+  learnerId?: ReviewPerson | string;
+  mentorId?: ReviewPerson | string;
+  courseId?: { _id?: string; title?: string } | string | null;
+  comment?: string;
+  reviewText?: string;
+  averageRating?: number;
+  rating?: number;
+  mentorReply?: string;
+  isHidden?: boolean;
+  report?: ReviewModerationRequest | null;
+  deletionRequest?: ReviewModerationRequest | null;
+  createdAt?: string;
+};
+
+export type ReviewModerationFilters = {
+  type?: "all" | "report" | "deletion";
+  status?: ReviewModerationStatus;
+};
+
+export type ReviewDecisionRequest = {
+  reviewId: string;
+  action: "approve" | "reject";
+  note?: string;
 };
 
 export type ReviewFilters = PaginationParams & {

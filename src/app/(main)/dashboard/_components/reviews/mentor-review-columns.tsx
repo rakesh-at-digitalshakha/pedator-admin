@@ -17,7 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import type { MentorReview } from "@/types/api";
 
-export const mentorReviewColumns = (): ColumnDef<MentorReview>[] => [
+import type { ReviewDecisionTarget } from "./review-decision-dialog";
+
+export const mentorReviewColumns = (
+  onDecide: (target: ReviewDecisionTarget) => void,
+): ColumnDef<MentorReview>[] => [
   {
     accessorKey: "learnerId",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Learner" />,
@@ -70,6 +74,27 @@ export const mentorReviewColumns = (): ColumnDef<MentorReview>[] => [
     },
   },
   {
+    id: "moderation",
+    header: "Requests",
+    cell: ({ row }) => {
+      const review = row.original;
+      const report = review.report?.status;
+      const deletion = review.deletionRequest?.status;
+      if (!report && !deletion && !review.isHidden) {
+        return <span className="text-muted-foreground text-sm">—</span>;
+      }
+      return (
+        <div className="flex flex-col items-start gap-1">
+          {review.isHidden ? <Badge variant="secondary">Hidden</Badge> : null}
+          {report ? <Badge variant={report === "pending" ? "outline" : "default"}>Report {report}</Badge> : null}
+          {deletion ? (
+            <Badge variant={deletion === "pending" ? "outline" : "default"}>Deletion {deletion}</Badge>
+          ) : null}
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "comment",
     header: "Review",
     cell: ({ row }) => {
@@ -82,6 +107,7 @@ export const mentorReviewColumns = (): ColumnDef<MentorReview>[] => [
     header: "Details",
     cell: ({ row }) => {
       const ratings = row.original.ratings;
+      if (!ratings) return <span className="text-muted-foreground text-sm">—</span>;
       return (
         <div className="text-muted-foreground text-xs space-y-0.5">
           <div>Comm: {ratings.communication}/5</div>
@@ -117,6 +143,33 @@ export const mentorReviewColumns = (): ColumnDef<MentorReview>[] => [
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(review._id)}>
               Copy review ID
             </DropdownMenuItem>
+            {review.report?.status === "pending" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onDecide({ reviewId: review._id, kind: "report", action: "approve" })}>
+                  Approve report
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDecide({ reviewId: review._id, kind: "report", action: "reject" })}>
+                  Reject report
+                </DropdownMenuItem>
+              </>
+            )}
+            {review.deletionRequest?.status === "pending" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onDecide({ reviewId: review._id, kind: "deletion", action: "approve" })}
+                  className="text-destructive"
+                >
+                  Approve deletion
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onDecide({ reviewId: review._id, kind: "deletion", action: "reject" })}
+                >
+                  Reject deletion
+                </DropdownMenuItem>
+              </>
+            )}
             {review.mentorReply && (
               <>
                 <DropdownMenuSeparator />

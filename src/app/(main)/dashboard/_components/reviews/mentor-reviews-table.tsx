@@ -14,6 +14,7 @@ import { useDataTableInstance } from "@/hooks/use-data-table-instance";
 import type { MentorReviewFilters } from "@/types/api";
 
 import { mentorReviewColumns } from "./mentor-review-columns";
+import { ReviewDecisionDialog, type ReviewDecisionTarget } from "./review-decision-dialog";
 
 export function MentorReviewsTable() {
   const [filters, setFilters] = React.useState<MentorReviewFilters>({
@@ -25,7 +26,7 @@ export function MentorReviewsTable() {
   const [searchValue, setSearchValue] = React.useState("");
   const [mentorFilter, setMentorFilter] = React.useState<string>("all");
   const [learnerFilter, setLearnerFilter] = React.useState<string>("all");
-  const [courseFilter, setCourseFilter] = React.useState<string>("all");
+  const [decision, setDecision] = React.useState<ReviewDecisionTarget | null>(null);
 
   // Debounced search
   React.useEffect(() => {
@@ -105,7 +106,7 @@ export function MentorReviewsTable() {
     });
   }, []);
 
-  const columns = React.useMemo(() => mentorReviewColumns(), []);
+  const columns = React.useMemo(() => mentorReviewColumns(setDecision), []);
 
   const table = useDataTableInstance({
     data: reviews,
@@ -233,6 +234,7 @@ export function MentorReviewsTable() {
           )}
         </>
       )}
+      <ReviewDecisionDialog target={decision} onClose={() => setDecision(null)} />
     </div>
   );
 }

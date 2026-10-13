@@ -11,6 +11,9 @@ import type {
   MentorReview,
   MentorReviewFilters,
   MentorReplyRequest,
+  ReviewDecisionRequest,
+  ReviewModerationFilters,
+  ReviewModerationItem,
   PaginationParams,
   PlatformReview,
   Review,
@@ -168,5 +171,56 @@ export const useDeleteMentorReview = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mentor-reviews"] });
     },
+  });
+};
+
+const invalidateReviewQueues = (queryClient: ReturnType<typeof useQueryClient>) => {
+  queryClient.invalidateQueries({ queryKey: ["review-moderation"] });
+  queryClient.invalidateQueries({ queryKey: ["mentor-reviews"] });
+};
+
+/**
+ * Mentor report and deletion requests waiting on admin
+ */
+export const useGetReviewModeration = (filters?: ReviewModerationFilters) => {
+  return useQuery({
+    queryKey: ["review-moderation", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters?.type) params.append("type", filters.type);
+      if (filters?.status) params.append("status", filters.status);
+      const response = await apiClient.get<ApiResponse<ReviewModerationItem[]>>(
+        `/reviews/moderation?${params.toString()}`,
+      );
+      return response.data;
+    },
+  });
+};
+
+export const useDecideReviewReport = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ reviewId, action, note }: ReviewDecisionRequest) => {
+      const response = await apiClient.post<ApiResponse<ReviewModerationItem>>(
+        `/reviews/${reviewId}/report/decision`,
+        { action, note },
+      );
+      return response.data;
+    },
+    onSuccess: () => invalidateReviewQueues(queryClient),
+  });
+};
+
+export const useDecideReviewDeletion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ reviewId, action, note }: ReviewDecisionRequest) => {
+      const response = await apiClient.post<ApiResponse<{ reviewId: string; deleted: boolean }>>(
+        `/reviews/${reviewId}/deletion-request/decision`,
+        { action, note },
+      );
+      return response.data;
+    },
+    onSuccess: () => invalidateReviewQueues(queryClient),
   });
 };

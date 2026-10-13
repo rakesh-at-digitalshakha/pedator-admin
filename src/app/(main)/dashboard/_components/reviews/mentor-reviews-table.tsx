@@ -26,6 +26,7 @@ export function MentorReviewsTable() {
   const [searchValue, setSearchValue] = React.useState("");
   const [mentorFilter, setMentorFilter] = React.useState<string>("all");
   const [learnerFilter, setLearnerFilter] = React.useState<string>("all");
+  const [courseFilter, setCourseFilter] = React.useState<string>("all");
   const [decision, setDecision] = React.useState<ReviewDecisionTarget | null>(null);
 
   // Debounced search

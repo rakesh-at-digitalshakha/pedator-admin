@@ -10,8 +10,7 @@ import { z } from "zod";
 import { useCreateBanner } from "@/hooks/api/use-promotions";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import Image from "next/image";
-import { resolveMediaUrl } from "@/lib/media-url";
+import { CloudinaryImageUpload } from "@/components/ui/cloudinary-image-upload";
 
 const bannerSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -112,21 +111,15 @@ export function BannerCreateDialog({ open, onOpenChange }: CreateDialogProps) {
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
+                  <FormLabel>Banner image</FormLabel>
+                  <CloudinaryImageUpload
+                    name="imageUrl"
+                    value={field.value}
+                    onChange={(url) => field.onChange(typeof url === "string" ? url : url[0] ?? "")}
+                    folder="pedator/banners"
+                    label="Banner image"
+                  />
                   <FormMessage />
-                  {field.value && (
-                    <div className="relative w-full h-40 rounded overflow-hidden bg-muted mt-2">
-                      <Image
-                        src={resolveMediaUrl(field.value)}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
                 </FormItem>
               )}
             />

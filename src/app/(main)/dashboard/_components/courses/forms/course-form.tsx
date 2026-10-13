@@ -60,7 +60,6 @@ export function CourseForm({
   const [values, setValues] = useState<CourseFormValues>(initialValues);
   const [tagsInput, setTagsInput] = useState((initialValues.tags || []).join(", "));
   const [keypointsInput, setKeypointsInput] = useState((initialValues.keypointsOfCourse || []).join(", "));
-  const [imagesInput, setImagesInput] = useState((initialValues.images || []).join(", "));
   const [faqsInput, setFaqsInput] = useState(
     (initialValues.faqs || [])
       .map((faq) => `${faq.question} | ${faq.answer}`)
@@ -118,7 +117,12 @@ export function CourseForm({
           <CloudinaryImageUpload
             name="coverImage"
             value={values.coverImage || ""}
-            onChange={(url) => setValues((v) => ({ ...v, coverImage: url }))}
+            onChange={(url) =>
+              setValues((v) => ({
+                ...v,
+                coverImage: typeof url === "string" ? url : url[0] ?? "",
+              }))
+            }
             folder="pedator/courses/images"
             label="Course cover image"
           />
@@ -183,13 +187,17 @@ export function CourseForm({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="course-images">Additional Image URLs</Label>
-        <Textarea
-          id="course-images"
-          value={imagesInput}
-          onChange={(e) => setImagesInput(e.target.value)}
-          placeholder="Comma separated Cloudinary image URLs"
-          rows={3}
+        <Label>Additional Images</Label>
+        <CloudinaryImageUpload
+          name="images"
+          multiple
+          value={values.images || []}
+          onChange={(next) => {
+            const list = Array.isArray(next) ? next : next ? [next] : [];
+            setValues((v) => ({ ...v, images: list }));
+          }}
+          folder="pedator/courses/images"
+          label="Additional course images"
         />
       </div>
       <div className="space-y-2">
@@ -370,7 +378,7 @@ export function CourseForm({
               price: Number(values.price),
               tags: parseCommaSeparated(tagsInput),
               keypointsOfCourse: parseCommaSeparated(keypointsInput),
-              images: parseCommaSeparated(imagesInput),
+              images: values.images || [],
               faqs: parseFaqLines(faqsInput),
             })
           }

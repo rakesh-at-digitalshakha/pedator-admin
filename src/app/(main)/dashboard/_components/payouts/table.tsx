@@ -187,9 +187,9 @@ export default function PayoutsTable() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Payouts</h1>
+            <h2 className="text-lg font-semibold">Mentor withdrawals</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Review mentor withdrawal requests. Approve to complete payout, or reject to refund their wallet.
+              Approve bank payouts from Available balance, or reject to refund the mentor wallet.
             </p>
           </div>
           <div className="flex gap-2">

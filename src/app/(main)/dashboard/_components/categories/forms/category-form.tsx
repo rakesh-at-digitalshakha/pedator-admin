@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { CloudinaryImageUpload } from "@/components/ui/cloudinary-image-upload";
 
 export type CategoryFormValues = {
   name: string;
@@ -53,12 +54,14 @@ export function CategoryForm({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="category-icon">Icon URL (optional)</Label>
-        <Input
-          id="category-icon"
+        <Label>Icon</Label>
+        <CloudinaryImageUpload
+          name="icon"
+          compact
           value={values.icon ?? ""}
-          onChange={(e) => setValues((v) => ({ ...v, icon: e.target.value }))}
-          placeholder="https://… or icon name"
+          onChange={(url) => setValues((v) => ({ ...v, icon: typeof url === "string" ? url : url[0] ?? "" }))}
+          folder="pedator/categories"
+          label="Category icon"
         />
       </div>
       <div className="flex items-center justify-between">

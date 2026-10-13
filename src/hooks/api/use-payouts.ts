@@ -1,4 +1,5 @@
 "use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -10,7 +11,8 @@ const BASE = "/admin";
 
 function apiErrorMessage(e: unknown, fallback: string) {
   if (e instanceof AxiosError) {
-    return (e.response?.data as any)?.message || e.message || fallback;
+    const msg = (e.response?.data as { message?: string } | undefined)?.message;
+    return msg ?? e.message ?? fallback;
   }
   if (e instanceof Error) return e.message;
   return fallback;
@@ -49,12 +51,32 @@ export type PayoutSummary = {
   all: { count: number; amount: number };
 };
 
+export type SettlementRow = {
+  id: string;
+  bookingId: string;
+  mentorId: string;
+  mentorName: string;
+  learnerId: string;
+  learnerName: string;
+  courseId: string;
+  courseTitle: string;
+  amount: number;
+  mentorEarning: number;
+  platformFee: number;
+  bookingStatus: string;
+  adminApprovalStatus: string;
+  paymentStatus: string;
+  bookingDate?: string;
+  updatedAt?: string;
+  reference?: string;
+};
+
 export function usePayoutSummary() {
   return useQuery({
     queryKey: ["payouts", "summary"],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<PayoutSummary>>(`${BASE}/payouts/summary`);
-      return response.data?.data as PayoutSummary;
+      return response.data.data;
     },
     staleTime: 15_000,
     retry: 1,
@@ -63,7 +85,7 @@ export function usePayoutSummary() {
 
 export function usePendingPayouts(params?: Record<string, string | number | boolean>) {
   const cleaned = Object.fromEntries(
-    Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== "")
+    Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== ""),
   );
   const qs = Object.keys(cleaned).length
     ? `?${new URLSearchParams(cleaned as Record<string, string>).toString()}`
@@ -80,12 +102,54 @@ export function usePendingPayouts(params?: Record<string, string | number | bool
   });
 }
 
+export function usePendingSettlements(params?: Record<string, string | number | boolean>) {
+  const cleaned = Object.fromEntries(
+    Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== ""),
+  );
+  const qs = Object.keys(cleaned).length
+    ? `?${new URLSearchParams(cleaned as Record<string, string>).toString()}`
+    : "";
+
+  return useQuery({
+    queryKey: ["settlements", "pending", cleaned],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<SettlementRow[]>>(
+        `${BASE}/settlements/pending${qs}`,
+      );
+      return response.data;
+    },
+    staleTime: 10_000,
+    retry: 1,
+  });
+}
+
+export function useSettleBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["settlements", "settle"],
+    mutationFn: async (bookingId: string) => {
+      const response = await apiClient.post<ApiResponse<unknown>>(
+        `${BASE}/slot-bookings/${bookingId}/settle`,
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Class settled — mentor available balance & platform fee updated");
+      qc.invalidateQueries({ queryKey: ["settlements"] });
+      qc.invalidateQueries({ queryKey: ["payouts"] });
+      qc.invalidateQueries({ queryKey: ["platform-wallet"] });
+      qc.invalidateQueries({ queryKey: ["bookings"] });
+    },
+    onError: (e: unknown) => toast.error(apiErrorMessage(e, "Failed to settle class")),
+  });
+}
+
 export function useApprovePayout() {
   const qc = useQueryClient();
   return useMutation({
     mutationKey: ["payouts", "approve"],
     mutationFn: async (id: string) => {
-      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/payouts/${id}/approve`);
+      const response = await apiClient.post<ApiResponse<unknown>>(`${BASE}/payouts/${id}/approve`);
       return response.data;
     },
     onSuccess: () => {
@@ -101,7 +165,7 @@ export function useRejectPayout() {
   return useMutation({
     mutationKey: ["payouts", "reject"],
     mutationFn: async (vars: { id: string; reason?: string }) => {
-      const response = await apiClient.post<ApiResponse<any>>(`${BASE}/payouts/${vars.id}/reject`, {
+      const response = await apiClient.post<ApiResponse<unknown>>(`${BASE}/payouts/${vars.id}/reject`, {
         reason: vars.reason,
       });
       return response.data;
@@ -119,8 +183,46 @@ export function usePayoutHistory(params?: Record<string, string | number | boole
   return useQuery({
     queryKey: ["payouts", "history", params],
     queryFn: async () => {
-      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/payouts/history${qs}`);
+      const response = await apiClient.get<ApiResponse<unknown>>(`${BASE}/payouts/history${qs}`);
       return response.data;
+    },
+  });
+}
+
+export function usePlatformWallet() {
+  return useQuery({
+    queryKey: ["platform-wallet"],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/platform-wallet`);
+      return response.data.data;
+    },
+    staleTime: 15_000,
+  });
+}
+
+export function usePlatformWalletSummary() {
+  return useQuery({
+    queryKey: ["platform-wallet", "summary"],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/platform-wallet/summary`);
+      return response.data.data;
+    },
+    staleTime: 15_000,
+  });
+}
+
+export function usePlatformTransactions(params?: Record<string, string | number>) {
+  const cleaned = Object.fromEntries(
+    Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== ""),
+  );
+  const qs = Object.keys(cleaned).length
+    ? `?${new URLSearchParams(cleaned as Record<string, string>).toString()}`
+    : "";
+  return useQuery({
+    queryKey: ["platform-wallet", "transactions", cleaned],
+    queryFn: async () => {
+      const response = await apiClient.get<ApiResponse<any>>(`${BASE}/platform-wallet/transactions${qs}`);
+      return response.data.data;
     },
   });
 }

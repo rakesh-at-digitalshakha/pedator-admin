@@ -40,6 +40,7 @@ export const ROUTE_PERMISSIONS: Record<string, string | null> = {
   // Content / comms
   "/dashboard/notifications": "notifications",
   "/dashboard/reviews": "reviews",
+  "/dashboard/faqs": "faqs",
   "/dashboard/video-sessions": "video_sessions",
   "/dashboard/promotions": "banners",
 

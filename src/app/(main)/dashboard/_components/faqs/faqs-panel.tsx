@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateFaq, useDeleteFaq, useGetFaqs, useUpdateFaq } from "@/hooks/api";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Faq, FaqAudience, FaqRequest } from "@/types/api";
 
 const emptyForm = (): FaqRequest => ({
@@ -41,6 +42,10 @@ export function FaqsPanel() {
   const [editing, setEditing] = useState<Faq | null>(null);
   const [form, setForm] = useState<FaqRequest>(emptyForm());
 
+  const { can } = usePermissions();
+  const canCreate = can("faqs", "create");
+  const canUpdate = can("faqs", "update");
+  const canDelete = can("faqs", "delete");
   const faqs = data?.data ?? [];
 
   const openCreate = () => {
@@ -103,7 +108,7 @@ export function FaqsPanel() {
           <CardTitle>Mentor FAQs</CardTitle>
           <CardDescription>These questions appear in the mentor app FAQ screen.</CardDescription>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} disabled={!canCreate}>
           <Plus className="mr-2 size-4" />
           Add FAQ
         </Button>
@@ -143,12 +148,16 @@ export function FaqsPanel() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(faq)}>
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => remove(faq)}>
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {canUpdate ? (
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(faq)}>
+                        <Pencil className="size-4" />
+                      </Button>
+                    ) : null}
+                    {canDelete ? (
+                      <Button variant="ghost" size="icon" onClick={() => remove(faq)}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

@@ -172,7 +172,7 @@ export const sidebarItems: NavGroup[] = [
         title: "FAQs",
         url: "/dashboard/faqs",
         icon: CircleHelp,
-        resource: null,
+        resource: "faqs",
       },
       {
         title: "Video Sessions",

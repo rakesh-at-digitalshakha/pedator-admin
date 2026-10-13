@@ -23,6 +23,7 @@ export const DEFAULT_RESOURCES = [
   "coupons",
   "banners",
   "reviews",
+  "faqs",
   "notifications",
   "video_sessions",
   "platform_wallet",

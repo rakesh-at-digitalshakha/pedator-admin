@@ -74,6 +74,7 @@ export function CategoriesManagement() {
     name: "",
     description: "",
     icon: "",
+    banner: "",
     status: true,
   });
 
@@ -97,7 +98,7 @@ export function CategoriesManagement() {
         toast.success("Category created successfully");
       }
       setShowCategoryDialog(false);
-      setCategoryForm({ name: "", description: "", icon: "", status: true });
+      setCategoryForm({ name: "", description: "", icon: "", banner: "", status: true });
       setEditingCategory(null);
     } catch (error) {
       toast.error("Failed to save category");
@@ -164,6 +165,7 @@ export function CategoriesManagement() {
       name: category.name,
       description: category.description || "",
       icon: category.icon || "",
+      banner: category.banner || "",
       status: category.status ?? true,
     });
     setShowCategoryDialog(true);
@@ -210,7 +212,7 @@ export function CategoriesManagement() {
               <Button
                 onClick={() => {
                   setEditingCategory(null);
-                  setCategoryForm({ name: "", description: "", icon: "", status: true });
+                  setCategoryForm({ name: "", description: "", icon: "", banner: "", status: true });
                   setShowCategoryDialog(true);
                 }}
               >

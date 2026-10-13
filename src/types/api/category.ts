@@ -8,6 +8,7 @@ export type Category = {
   description?: string;
   image?: string;
   icon?: string;
+  banner?: string;
   displayLevel?: string;
   themeColor?: string;
   textColor?: string;
@@ -55,6 +56,7 @@ export type CreateCategoryRequest = {
   description?: string;
   image?: string;
   icon?: string;
+  banner?: string;
   displayLevel?: string;
   themeColor?: string;
   textColor?: string;

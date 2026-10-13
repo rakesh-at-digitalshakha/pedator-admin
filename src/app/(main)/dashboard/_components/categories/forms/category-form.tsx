@@ -12,6 +12,7 @@ export type CategoryFormValues = {
   name: string;
   description?: string;
   icon?: string;
+  banner?: string;
   status?: boolean;
 };
 
@@ -64,6 +65,16 @@ export function CategoryForm({
           label="Category icon"
         />
       </div>
+      <div className="space-y-2">
+        <Label>Banner</Label>
+        <CloudinaryImageUpload
+          name="banner"
+          value={values.banner ?? ""}
+          onChange={(url) => setValues((v) => ({ ...v, banner: typeof url === "string" ? url : url[0] ?? "" }))}
+          folder="pedator/categories/banners"
+          label="Category banner"
+        />
+      </div>
       <div className="flex items-center justify-between">
         <Label htmlFor="category-status">Active</Label>
         <Switch
@@ -83,6 +94,7 @@ export function CategoryForm({
               name: values.name.trim(),
               description: values.description?.trim() ?? "",
               icon: (values.icon ?? "").trim(),
+              banner: (values.banner ?? "").trim(),
             })
           }
           disabled={loading || !values.name.trim()}

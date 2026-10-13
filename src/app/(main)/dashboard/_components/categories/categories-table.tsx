@@ -51,6 +51,7 @@ export function CategoriesTable() {
     name: "",
     description: "",
     icon: "",
+    banner: "",
     status: true,
   });
 
@@ -67,7 +68,7 @@ export function CategoriesTable() {
         toast.success("Category created successfully");
       }
       setShowCategoryDialog(false);
-      setCategoryForm({ name: "", description: "", icon: "", status: true });
+      setCategoryForm({ name: "", description: "", icon: "", banner: "", status: true });
       setEditingCategory(null);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to save category");
@@ -97,6 +98,7 @@ export function CategoriesTable() {
       name: category.name,
       description: category.description || "",
       icon: category.icon || "",
+      banner: category.banner || "",
       status: category.status ?? true,
     });
     setShowCategoryDialog(true);
@@ -122,7 +124,7 @@ export function CategoriesTable() {
             <Button
               onClick={() => {
                 setEditingCategory(null);
-                setCategoryForm({ name: "", description: "", icon: "", status: true });
+                setCategoryForm({ name: "", description: "", icon: "", banner: "", status: true });
                 setShowCategoryDialog(true);
               }}
             >

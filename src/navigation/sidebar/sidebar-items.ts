@@ -9,6 +9,7 @@ import {
   FolderTree,
   Star,
   Video,
+  CircleHelp,
   Layers,
   Boxes,
   Folder,
@@ -166,6 +167,12 @@ export const sidebarItems: NavGroup[] = [
         url: "/dashboard/reviews",
         icon: Star,
         resource: "reviews",
+      },
+      {
+        title: "FAQs",
+        url: "/dashboard/faqs",
+        icon: CircleHelp,
+        resource: null,
       },
       {
         title: "Video Sessions",

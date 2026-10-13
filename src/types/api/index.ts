@@ -44,3 +44,5 @@ export * from "./notification";
 
 // Location types
 export * from "./location";
+
+export * from "./faq";

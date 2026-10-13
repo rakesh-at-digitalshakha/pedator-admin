@@ -38,3 +38,5 @@ export * from "./use-login";
 
 // Location (countries / cities)
 export * from "./use-location";
+
+export * from "./use-faq";

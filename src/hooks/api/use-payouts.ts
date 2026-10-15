@@ -137,6 +137,7 @@ export function useSettleBooking() {
       toast.success("Class settled — mentor available balance & platform fee updated");
       qc.invalidateQueries({ queryKey: ["settlements"] });
       qc.invalidateQueries({ queryKey: ["payouts"] });
+      qc.invalidateQueries({ queryKey: ["transactions"] });
       qc.invalidateQueries({ queryKey: ["platform-wallet"] });
       qc.invalidateQueries({ queryKey: ["bookings"] });
     },
@@ -155,6 +156,7 @@ export function useApprovePayout() {
     onSuccess: () => {
       toast.success("Payout approved — mentor withdrawal marked completed");
       qc.invalidateQueries({ queryKey: ["payouts"] });
+      qc.invalidateQueries({ queryKey: ["transactions"] });
     },
     onError: (e: unknown) => toast.error(apiErrorMessage(e, "Failed to approve payout")),
   });
@@ -173,6 +175,7 @@ export function useRejectPayout() {
     onSuccess: () => {
       toast.success("Payout rejected — amount refunded to mentor wallet");
       qc.invalidateQueries({ queryKey: ["payouts"] });
+      qc.invalidateQueries({ queryKey: ["transactions"] });
     },
     onError: (e: unknown) => toast.error(apiErrorMessage(e, "Failed to reject payout")),
   });

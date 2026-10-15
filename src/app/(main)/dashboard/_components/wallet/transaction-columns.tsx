@@ -33,7 +33,10 @@ const typeLabels: Record<Transaction["type"], string> = {
   refund: "Refund",
 };
 
-export const transactionColumns: ColumnDef<Transaction>[] = [
+export const transactionColumns = (actions?: {
+  onApprove?: (transaction: Transaction) => void;
+  onReject?: (transaction: Transaction) => void;
+}): ColumnDef<Transaction>[] => [
   {
     accessorKey: "_id",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Transaction ID" />,
@@ -156,8 +159,20 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(transaction._id)}>
               Copy transaction ID
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
+            {transaction.type === "withdrawal" && transaction.status === "pending" && actions?.onApprove && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => actions.onApprove?.(transaction)}>
+                  Approve withdrawal
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={() => actions.onReject?.(transaction)}
+                >
+                  Reject and refund wallet
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

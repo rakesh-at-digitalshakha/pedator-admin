@@ -18,6 +18,28 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import { transactionColumns } from "./transaction-columns";
+import { useApprovePayout, useRejectPayout } from "@/hooks/api/use-payouts";
+import { formatCurrency } from "@/lib/utils";
+import type { Transaction } from "@/types/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function TransactionsTable() {
   const [filters, setFilters] = React.useState<TransactionFilters>({
@@ -33,6 +55,11 @@ export function TransactionsTable() {
   const [userIdFilter, setUserIdFilter] = React.useState<string>("all");
   const [startDate, setStartDate] = React.useState<Date | undefined>();
   const [endDate, setEndDate] = React.useState<Date | undefined>();
+  const [approving, setApproving] = React.useState<Transaction | null>(null);
+  const [rejecting, setRejecting] = React.useState<Transaction | null>(null);
+  const [rejectReason, setRejectReason] = React.useState("");
+  const approvePayout = useApprovePayout();
+  const rejectPayout = useRejectPayout();
 
   // Debounced search
   React.useEffect(() => {
@@ -140,7 +167,17 @@ export function TransactionsTable() {
     return [];
   }, [userModelFilter, mentors, learners]);
 
-  const columns = React.useMemo(() => transactionColumns, []);
+  const columns = React.useMemo(
+    () =>
+      transactionColumns({
+        onApprove: setApproving,
+        onReject: (transaction) => {
+          setRejectReason("");
+          setRejecting(transaction);
+        },
+      }),
+    [],
+  );
 
   const table = useDataTableInstance({
     data: transactions,
@@ -345,6 +382,66 @@ export function TransactionsTable() {
           </>
         )}
       </CardContent>
+      <AlertDialog open={!!approving} onOpenChange={(open) => !open && setApproving(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve withdrawal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirm payout of {formatCurrency(approving?.amount ?? 0)}. This amount was already held from the
+              mentor Available balance when they requested the withdrawal. Approving marks it completed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={approvePayout.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={approvePayout.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                if (!approving) return;
+                approvePayout.mutate(approving._id, {
+                  onSuccess: () => setApproving(null),
+                });
+              }}
+            >
+              {approvePayout.isPending ? "Approving..." : "Approve"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <Dialog open={!!rejecting} onOpenChange={(open) => !open && setRejecting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject withdrawal</DialogTitle>
+            <DialogDescription>
+              Reject {formatCurrency(rejecting?.amount ?? 0)}. The amount goes back to the mentor wallet.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={rejectReason}
+            onChange={(event) => setRejectReason(event.target.value)}
+            placeholder="Reason for rejection"
+            rows={3}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejecting(null)} disabled={rejectPayout.isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={rejectPayout.isPending}
+              onClick={() => {
+                if (!rejecting) return;
+                rejectPayout.mutate(
+                  { id: rejecting._id, reason: rejectReason.trim() || "Rejected by admin" },
+                  { onSuccess: () => setRejecting(null) },
+                );
+              }}
+            >
+              {rejectPayout.isPending ? "Rejecting..." : "Reject and refund"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
